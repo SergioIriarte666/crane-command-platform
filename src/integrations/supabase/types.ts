@@ -14,6 +14,50 @@ export type Database = {
   }
   public: {
     Tables: {
+      backup_logs: {
+        Row: {
+          backup_type: string
+          created_at: string | null
+          created_by: string | null
+          error_message: string | null
+          file_size_bytes: number | null
+          id: string
+          metadata: Json | null
+          status: string
+          tenant_id: string | null
+        }
+        Insert: {
+          backup_type: string
+          created_at?: string | null
+          created_by?: string | null
+          error_message?: string | null
+          file_size_bytes?: number | null
+          id?: string
+          metadata?: Json | null
+          status: string
+          tenant_id?: string | null
+        }
+        Update: {
+          backup_type?: string
+          created_at?: string | null
+          created_by?: string | null
+          error_message?: string | null
+          file_size_bytes?: number | null
+          id?: string
+          metadata?: Json | null
+          status?: string
+          tenant_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "backup_logs_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       bank_transactions: {
         Row: {
           account_number: string | null
@@ -2868,12 +2912,14 @@ export type Database = {
         Args: { _tenant_id: string }
         Returns: string
       }
+      generate_database_backup: { Args: never; Returns: string }
       generate_employee_number: {
         Args: { _tenant_id: string }
         Returns: string
       }
       generate_inventory_code: { Args: { _tenant_id: string }; Returns: string }
       generate_invoice_folio: { Args: { _tenant_id: string }; Returns: string }
+      generate_quick_backup: { Args: never; Returns: Json }
       generate_service_folio: { Args: { _tenant_id: string }; Returns: string }
       generate_supplier_code: { Args: { _tenant_id: string }; Returns: string }
       get_user_tenant_id: { Args: { _user_id: string }; Returns: string }
