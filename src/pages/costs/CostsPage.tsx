@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Plus, Search, Filter, Download, MoreHorizontal, Eye, Pencil, Trash2, CheckCircle, XCircle, SendHorizontal, Wrench, FileText, FileSpreadsheet, Copy, ChevronLeft, ChevronRight, Check, ChevronsUpDown, X } from 'lucide-react';
+import { Plus, Search, Filter, Download, MoreHorizontal, Eye, Pencil, Trash2, CheckCircle, XCircle, SendHorizontal, Wrench, FileText, FileSpreadsheet, Copy, ChevronLeft, ChevronRight, Check, ChevronsUpDown, X, Code } from 'lucide-react';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 
@@ -64,6 +64,7 @@ import {
 import { QueryErrorState } from '@/components/common/QueryErrorState';
 import { CostDetailDialog } from '@/components/costs/CostDetailDialog';
 import { ServiceDetailsModal } from '@/components/services/ServiceDetailsModal';
+import { XMLCostUpload } from '@/components/costs/XMLCostUpload';
 import { exportCostsToCSV, exportServiceCostsToCSV, exportServiceCostsToExcel, exportServiceCostsToPDF } from '@/lib/costExport';
 import { useCatalogs } from '@/hooks/useCatalogs';
 import { useCatalogSubcategories } from '@/hooks/useCatalogSubcategories';
@@ -83,6 +84,7 @@ export default function CostsPage() {
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [rejectDialog, setRejectDialog] = useState<{ open: boolean; id: string | null }>({ open: false, id: null });
   const [rejectReason, setRejectReason] = useState('');
+  const [isXMLUploadOpen, setIsXMLUploadOpen] = useState(false);
 
   const effectiveFilters: CostFilters = {
     ...filters,
@@ -346,6 +348,10 @@ export default function CostsPage() {
           </p>
         </div>
         <div className="flex gap-2">
+          <Button variant="outline" onClick={() => setIsXMLUploadOpen(true)}>
+            <Code className="w-4 h-4 mr-2" />
+            Cargar XML
+          </Button>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="outline">
@@ -355,20 +361,20 @@ export default function CostsPage() {
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
               <DropdownMenuItem onClick={() => exportCostsToCSV(costs)}>
-                <FileText className="w-4 h-4 mrhandl-E2" />(export, 
+                <FileText className="w-4 h-4 mr-2" />
                 Costos Operativos (CSV)
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem onClick={() => exportServiceCostsToCSV(sortedServiceCosts, categoriesMap)}>
-                <FileText className="w-4 h-4 mrhandl-E2" />(export, 
+                <FileText className="w-4 h-4 mr-2" />
                 Costos de Servicios (CSV)
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => exportServiceCostsToExcel(sortedServiceCosts, categoriesMap)}>
-                <FileSpreadsheet className="w-4handleExport( h-4 mr-2" />, 
+                <FileSpreadsheet className="w-4 h-4 mr-2" />
                 Costos de Servicios (Excel)
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => exportServiceCostsToPDF(sortedServiceCosts, categoriesMap)}>
-                <FileText className="w-4 h-4 mrhandleExport(-2" />, 
+                <FileText className="w-4 h-4 mr-2" />
                 Costos de Servicios (PDF)
               </DropdownMenuItem>
             </DropdownMenuContent>
@@ -381,6 +387,15 @@ export default function CostsPage() {
           </Button>
         </div>
       </div>
+
+      {/* XML Upload Modal */}
+      <XMLCostUpload
+        isOpen={isXMLUploadOpen}
+        onClose={() => setIsXMLUploadOpen(false)}
+        onSuccess={(count) => {
+          refetch();
+        }}
+      />
 
       <Tabs defaultValue="services" className="space-y-4">
         <TabsList className="grid w-full grid-cols-2 md:w-[420px]">
