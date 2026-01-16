@@ -148,14 +148,14 @@ function PlanCard({ plan, isCurrentPlan }: PlanCardProps) {
 export function PlanLimitsCard() {
   const [upgradeDialogOpen, setUpgradeDialogOpen] = useState(false);
   const { data: tenant, isLoading: tenantLoading } = useTenant();
-  const { data: usage, isLoading: usageLoading } = usePlanUsage();
+  const usage = usePlanUsage();
   const { data: plans, isLoading: plansLoading } = usePlanConfigs();
   
   const currentPlanKey = tenant?.plan || 'basic';
   const currentPlan = plans?.find((p) => p.plan_key === currentPlanKey);
   const isEnterprise = currentPlanKey === 'enterprise';
   
-  const isLoading = tenantLoading || usageLoading || plansLoading;
+  const isLoading = tenantLoading || usage.isLoading || plansLoading;
   
   if (isLoading) {
     return (
@@ -240,25 +240,25 @@ export function PlanLimitsCard() {
             <UsageBar 
               label="Grúas" 
               icon={<Truck className="h-4 w-4" />}
-              current={usage?.cranes || 0}
+              current={usage.currentCranes}
               limit={currentPlan.max_cranes}
             />
             <UsageBar 
               label="Usuarios" 
               icon={<Users className="h-4 w-4" />}
-              current={usage?.users || 0}
+              current={usage.currentUsers}
               limit={currentPlan.max_users}
             />
             <UsageBar 
               label="Operadores" 
               icon={<UserCog className="h-4 w-4" />}
-              current={usage?.operators || 0}
+              current={usage.currentOperators}
               limit={currentPlan.max_operators}
             />
             <UsageBar 
               label="Clientes" 
               icon={<Building2 className="h-4 w-4" />}
-              current={usage?.clients || 0}
+              current={0}
               limit={currentPlan.max_clients}
             />
           </div>
