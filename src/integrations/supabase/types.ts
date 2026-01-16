@@ -1584,47 +1584,6 @@ export type Database = {
           },
         ]
       }
-      notifications: {
-        Row: {
-          created_at: string
-          id: string
-          message: string
-          read: boolean
-          tenant_id: string
-          title: string
-          type: Database["public"]["Enums"]["notification_type"]
-          user_id: string | null
-        }
-        Insert: {
-          created_at?: string
-          id?: string
-          message: string
-          read?: boolean
-          tenant_id: string
-          title: string
-          type?: Database["public"]["Enums"]["notification_type"]
-          user_id?: string | null
-        }
-        Update: {
-          created_at?: string
-          id?: string
-          message?: string
-          read?: boolean
-          tenant_id?: string
-          title?: string
-          type?: Database["public"]["Enums"]["notification_type"]
-          user_id?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "notifications_tenant_id_fkey"
-            columns: ["tenant_id"]
-            isOneToOne: false
-            referencedRelation: "tenants"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       operator_documents: {
         Row: {
           created_at: string | null
@@ -2995,7 +2954,6 @@ export type Database = {
         | "cancelled"
       maintenance_type: "preventive" | "corrective"
       movement_type: "in" | "out" | "adjustment" | "transfer"
-      notification_type: "info" | "warning" | "error" | "success"
       operator_status: "active" | "inactive" | "vacation" | "suspended"
       payment_method: "cash" | "transfer" | "check" | "card"
       payment_status: "pending" | "confirmed" | "rejected"
@@ -3226,7 +3184,6 @@ export const Constants = {
       ],
       maintenance_type: ["preventive", "corrective"],
       movement_type: ["in", "out", "adjustment", "transfer"],
-      notification_type: ["info", "warning", "error", "success"],
       operator_status: ["active", "inactive", "vacation", "suspended"],
       payment_method: ["cash", "transfer", "check", "card"],
       payment_status: ["pending", "confirmed", "rejected"],
