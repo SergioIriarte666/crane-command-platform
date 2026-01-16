@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Building2, Users, Shield, Bell, Palette, Database, Crown, CreditCard } from 'lucide-react';
+import { Building2, Users, Shield, Bell, Palette, Database, Crown, CreditCard, HardDrive } from 'lucide-react';
 import { CompanySettings } from '@/components/settings/CompanySettings';
 import { UsersSettings } from '@/components/settings/UsersSettings';
 import { RolesSettings } from '@/components/settings/RolesSettings';
@@ -9,11 +9,12 @@ import { AppearanceSettings } from '@/components/settings/AppearanceSettings';
 import { CatalogSettings } from '@/components/settings/CatalogSettings';
 import { TenantsSettings } from '@/components/settings/TenantsSettings';
 import { PlansConfigSettings } from '@/components/settings/PlansConfigSettings';
+import { BackupManagementSection } from '@/components/settings/BackupManagementSection';
 import { useAuth } from '@/contexts/AuthContext';
 
 export default function SettingsPage() {
   const [activeTab, setActiveTab] = useState('company');
-  const { isSuperAdmin } = useAuth();
+  const { isSuperAdmin, isAdmin } = useAuth();
 
   const baseTabs = [
     { id: 'company', label: 'Empresa', icon: Building2 },
@@ -24,12 +25,17 @@ export default function SettingsPage() {
     { id: 'appearance', label: 'Apariencia', icon: Palette },
   ];
 
-  const superAdminTabs = [
+  // Solo admins pueden ver respaldos
+  const adminTabs = isAdmin() ? [
+    { id: 'backups', label: 'Respaldos', icon: HardDrive },
+  ] : [];
+
+  const superAdminTabs = isSuperAdmin() ? [
     { id: 'tenants', label: 'Empresas', icon: Crown },
     { id: 'plans', label: 'Planes', icon: CreditCard },
-  ];
+  ] : [];
 
-  const tabs = isSuperAdmin() ? [...baseTabs, ...superAdminTabs] : baseTabs;
+  const tabs = [...baseTabs, ...adminTabs, ...superAdminTabs];
 
   return (
     <div className="space-y-6">
@@ -77,6 +83,12 @@ export default function SettingsPage() {
         <TabsContent value="appearance">
           <AppearanceSettings />
         </TabsContent>
+
+        {isAdmin() && (
+          <TabsContent value="backups">
+            <BackupManagementSection />
+          </TabsContent>
+        )}
 
         {isSuperAdmin() && (
           <>
