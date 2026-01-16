@@ -35,6 +35,9 @@ export default function InvoicesPage() {
   const { updateClosure } = useClosures();
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [clientFilter, setClientFilter] = useState<string>('all');
+  const [dateFrom, setDateFrom] = useState('');
+  const [dateTo, setDateTo] = useState('');
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [showFormDialog, setShowFormDialog] = useState(false);
   const [cancellingInvoice, setCancellingInvoice] = useState<InvoiceWithRelations | null>(null);
@@ -43,24 +46,41 @@ export default function InvoicesPage() {
   // Sorting and Pagination
   const [sortConfig, setSortConfig] = useState<{ key: string; direction: 'asc' | 'desc' } | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage] = useState(10);
+  const [itemsPerPage] = useState(50);
 
   const filteredInvoices = useMemo(() => {
     return invoices.filter((inv) => {
       const matchesSearch = inv.folio.toLowerCase().includes(search.toLowerCase()) ||
         inv.client?.name?.toLowerCase().includes(search.toLowerCase()) ||
         inv.fiscal_folio?.toLowerCase().includes(search.toLowerCase());
+
       const matchesStatus = statusFilter === 'all' || inv.status === statusFilter;
-      return matchesSearch && matchesStatus;
+      const matchesClient = clientFilter === 'all' || inv.client?.id === clientFilter;
+
+      const issueDate = inv.issue_date;
+      const matchesFrom = !dateFrom || issueDate >= dateFrom;
+      const matchesTo = !dateTo || issueDate <= dateTo;
+
+      return matchesSearch && matchesStatus && matchesClient && matchesFrom && matchesTo;
     });
-  }, [invoices, search, statusFilter]);
+  }, [invoices, search, statusFilter, clientFilter, dateFrom, dateTo]);
+
+  const clients = useMemo(() => {
+    const unique = new Map<string, string>();
+    invoices.forEach((inv) => {
+      if (inv.client) {
+        unique.set(inv.client.id, inv.client.name);
+      }
+    });
+    return Array.from(unique.entries());
+  }, [invoices]);
 
   const sortedInvoices = useMemo(() => {
-    let sorted = [...filteredInvoices];
+    const sorted = [...filteredInvoices];
     if (sortConfig) {
       sorted.sort((a, b) => {
-        let aValue: any = a[sortConfig.key as keyof InvoiceWithRelations];
-        let bValue: any = b[sortConfig.key as keyof InvoiceWithRelations];
+        let aValue: string | number = a[sortConfig.key as keyof InvoiceWithRelations] as unknown as string | number;
+        let bValue: string | number = b[sortConfig.key as keyof InvoiceWithRelations] as unknown as string | number;
 
         // Handle nested or specific fields
         if (sortConfig.key === 'client') {
@@ -184,20 +204,57 @@ export default function InvoicesPage() {
       </div>
 
       <div className="flex flex-col md:flex-row gap-2 justify-between items-center">
-        <div className="flex gap-2 flex-1 w-full md:w-auto">
-          <div className="relative flex-1">
+        <div className="flex gap-2 flex-1 w-full md:w-auto flex-wrap">
+          <div className="relative flex-1 min-w-[220px]">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-            <Input placeholder="Buscar por folio, fiscal o cliente..." value={search} onChange={(e) => setSearch(e.target.value)} className="pl-10" />
+            <Input
+              placeholder="Buscar por folio, fiscal o cliente..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="pl-10"
+            />
           </div>
           <Select value={statusFilter} onValueChange={setStatusFilter}>
-            <SelectTrigger className="w-40"><SelectValue placeholder="Estado" /></SelectTrigger>
+            <SelectTrigger className="w-40">
+              <SelectValue placeholder="Estado" />
+            </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">Todos</SelectItem>
               {Object.entries(INVOICE_STATUS_CONFIG).map(([key, config]) => (
-                <SelectItem key={key} value={key}>{config.label}</SelectItem>
+                <SelectItem key={key} value={key}>
+                  {config.label}
+                </SelectItem>
               ))}
             </SelectContent>
           </Select>
+          <Select value={clientFilter} onValueChange={setClientFilter}>
+            <SelectTrigger className="w-48">
+              <SelectValue placeholder="Cliente" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Todos los clientes</SelectItem>
+              {clients.map(([id, name]) => (
+                <SelectItem key={id} value={id}>
+                  {name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <div className="flex items-center gap-2">
+            <Input
+              type="date"
+              value={dateFrom}
+              onChange={(e) => setDateFrom(e.target.value)}
+              className="w-[135px]"
+            />
+            <span className="text-muted-foreground text-sm">-</span>
+            <Input
+              type="date"
+              value={dateTo}
+              onChange={(e) => setDateTo(e.target.value)}
+              className="w-[135px]"
+            />
+          </div>
         </div>
         <div className="flex gap-2 w-full md:w-auto">
           <Button variant="outline" size="sm" onClick={() => exportInvoicesToExcel(sortedInvoices)}>

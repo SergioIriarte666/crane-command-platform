@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Plus, Search, Filter, Download, MoreHorizontal, Eye, Pencil, Trash2, CheckCircle, XCircle, SendHorizontal, Wrench, FileText, FileSpreadsheet, Copy, ChevronLeft, ChevronRight, Check, ChevronsUpDown } from 'lucide-react';
+import { Plus, Search, Filter, Download, MoreHorizontal, Eye, Pencil, Trash2, CheckCircle, XCircle, SendHorizontal, Wrench, FileText, FileSpreadsheet, Copy, ChevronLeft, ChevronRight, Check, ChevronsUpDown, X } from 'lucide-react';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 
@@ -49,7 +49,6 @@ import { Textarea } from '@/components/ui/textarea';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command';
-
 import { useCosts, useCostStats, CostFilters } from '@/hooks/useCosts';
 import { useServiceCostsLedger } from '@/hooks/useServiceCostsLedger';
 import { useAuth } from '@/contexts/AuthContext';
@@ -91,7 +90,7 @@ export default function CostsPage() {
     dateTo: dateRange.to ? format(dateRange.to, 'yyyy-MM-dd') : undefined,
   };
 
-  const { costs, isLoading, error, refetch, deleteCost, approveCost, rejectCost, submitForApproval } = useCosts(effectiveFilters);
+  const { costs, isLoading, error, refetch, deleteCost, approveCost, rejectCost, submitForApproval, updateCost } = useCosts(effectiveFilters);
   const { data: stats } = useCostStats(effectiveFilters.dateFrom, effectiveFilters.dateTo);
 
   const {
@@ -108,7 +107,7 @@ export default function CostsPage() {
   const { catalogs: costCategories } = useCatalogs('cost_category');
 
   const [ledgerPage, setLedgerPage] = useState(1);
-  const [ledgerPageSize] = useState(10);
+  const [ledgerPageSize] = useState(50);
   const [ledgerSortDesc, setLedgerSortDesc] = useState(true);
 
   const [serviceCostDialogOpen, setServiceCostDialogOpen] = useState(false);
@@ -197,6 +196,9 @@ export default function CostsPage() {
     return sortedServiceCosts.slice(start, end);
   }, [sortedServiceCosts, currentLedgerPage, ledgerPageSize]);
 
+  const [editingServiceCostId, setEditingServiceCostId] = useState<string | null>(null);
+  const [editServiceCostDescription, setEditServiceCostDescription] = useState('');
+
   const openServiceCostDialog = (mode: 'view' | 'edit' | 'duplicate', row: typeof serviceCosts[number]) => {
     if (!row.service_id) {
       toast.error('El costo no está asociado a ningún servicio');
@@ -231,8 +233,8 @@ export default function CostsPage() {
       return;
     }
 
-    if (description.length > 200) {
-      toast.error('La descripción no puede superar los 200 caracteres');
+    if (description.length > 255) {
+      toast.error('La descripción no puede superar los 255 caracteres');
       return;
     }
 
@@ -277,6 +279,45 @@ export default function CostsPage() {
       refetchServiceCosts();
     } catch (error: any) {
       toast.error(error?.message || 'Error al guardar el costo');
+    }
+  };
+
+  const startEditingServiceCost = (row: typeof serviceCosts[number]) => {
+    setEditingServiceCostId(row.id);
+    setEditServiceCostDescription(row.description);
+  };
+
+  const cancelEditingServiceCost = () => {
+    setEditingServiceCostId(null);
+    setEditServiceCostDescription('');
+  };
+
+  const saveServiceCostDescription = async (row: typeof serviceCosts[number]) => {
+    const trimmed = editServiceCostDescription.trim();
+
+    if (!trimmed) {
+      toast.error('La descripción no puede estar vacía');
+      return;
+    }
+
+    if (trimmed.length > 255) {
+      toast.error('La descripción no puede superar los 255 caracteres');
+      return;
+    }
+
+    try {
+      await updateServiceCost.mutateAsync({
+        id: row.id,
+        service_id: row.service_id,
+        description: trimmed,
+      } as any);
+
+      toast.success('Descripción actualizada correctamente');
+      setEditingServiceCostId(null);
+      setEditServiceCostDescription('');
+      refetchServiceCosts();
+    } catch (error: any) {
+      toast.error(error?.message || 'Error al actualizar la descripción');
     }
   };
 
@@ -519,8 +560,46 @@ export default function CostsPage() {
                         <TableCell className="text-sm text-muted-foreground">
                           {row.cost_date ? format(new Date(row.cost_date), 'dd/MM/yyyy') : '—'}
                         </TableCell>
-                        <TableCell className="max-w-[260px] truncate">
-                          {row.description}
+                        <TableCell className="max-w-[260px]">
+                          {editingServiceCostId === row.id ? (
+                            <div className="flex items-center gap-2">
+                              <Input
+                                value={editServiceCostDescription}
+                                onChange={(e) => setEditServiceCostDescription(e.target.value)}
+                                className="h-8"
+                                autoFocus
+                                onKeyDown={(e) => {
+                                  if (e.key === 'Enter') saveServiceCostDescription(row);
+                                  if (e.key === 'Escape') cancelEditingServiceCost();
+                                }}
+                              />
+                              <Button
+                                size="icon"
+                                variant="ghost"
+                                className="h-8 w-8 text-green-600"
+                                onClick={() => saveServiceCostDescription(row)}
+                              >
+                                <Check className="h-4 w-4" />
+                              </Button>
+                              <Button
+                                size="icon"
+                                variant="ghost"
+                                className="h-8 w-8 text-red-600"
+                                onClick={cancelEditingServiceCost}
+                              >
+                                <X className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          ) : (
+                            <div
+                              className="truncate cursor-pointer hover:text-primary flex items-center gap-2 group"
+                              title={row.description}
+                              onClick={() => startEditingServiceCost(row)}
+                            >
+                              {row.description}
+                              <Pencil className="h-3 w-3 opacity-0 group-hover:opacity-50" />
+                            </div>
+                          )}
                         </TableCell>
                         <TableCell>
                           {row.category_id ? (categoriesMap[row.category_id] || '—') : '—'}
