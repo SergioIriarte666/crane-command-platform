@@ -131,7 +131,8 @@ export const useBackupManager = () => {
           stage: 'Exportando tablas...'
         });
 
-        const tables = [
+        // Solo tablas con tenant_id (RLS filtrará automáticamente)
+        const tenantTables = [
           'clients',
           'operators', 
           'cranes',
@@ -140,9 +141,8 @@ export const useBackupManager = () => {
           'costs',
           'cost_categories',
           'cost_subcategories',
-          'invoices',
-          'invoice_items',
           'billing_closures',
+          'invoices',
           'commissions',
           'payments',
           'catalog_items'
@@ -161,10 +161,11 @@ export const useBackupManager = () => {
         };
 
         let progressValue = 40;
-        const progressIncrement = 40 / tables.length;
+        const progressIncrement = 40 / tenantTables.length;
 
-        for (const tableName of tables) {
+        for (const tableName of tenantTables) {
           try {
+            // RLS filtrará automáticamente por tenant
             const { data: tableData, error: tableError } = await supabase
               .from(tableName as 'clients')
               .select('*');
