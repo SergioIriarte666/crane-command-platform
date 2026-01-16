@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Plus, ClipboardList, Search, Pencil, Trash2, Eye, Check, Copy, Download, ArrowRight, X } from 'lucide-react';
+import { Plus, ClipboardList, Search, Pencil, Trash2, Eye, Check, Copy, Download, ArrowRight, X, Upload } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
@@ -48,6 +48,7 @@ import { useServices } from '@/hooks/useServices';
 import { ServicePipeline } from '@/components/services/ServicePipeline';
 import { EnhancedServiceForm } from '@/components/services/EnhancedServiceForm';
 import { ServiceDetailsModal } from '@/components/services/ServiceDetailsModal';
+import { EnhancedCSVUploadServices } from '@/components/services/EnhancedCSVUploadServices';
 import { toast } from '@/hooks/use-toast';
 import { 
   SERVICE_STATUS_CONFIG, 
@@ -89,6 +90,9 @@ export default function ServicesPage({ defaultView = 'list' }: ServicesPageProps
   const [isBatchDeleteOpen, setIsBatchDeleteOpen] = useState(false);
   const [batchStatusTarget, setBatchStatusTarget] = useState<ServiceStatus | null>(null);
   const [isBatchProcessing, setIsBatchProcessing] = useState(false);
+  
+  // State for CSV upload
+  const [isCSVUploadOpen, setIsCSVUploadOpen] = useState(false);
 
   const toggleSelectAll = () => {
     if (selectedServices.size === filteredServices.length) {
@@ -299,11 +303,26 @@ export default function ServicesPage({ defaultView = 'list' }: ServicesPageProps
             {services.length} servicios registrados
           </p>
         </div>
-        <Button onClick={handleOpenNew}>
-          <Plus className="w-4 h-4 mr-2" />
-          Nuevo Servicio
-        </Button>
+        <div className="flex gap-2">
+          <Button variant="outline" onClick={() => setIsCSVUploadOpen(true)}>
+            <Upload className="w-4 h-4 mr-2" />
+            Carga Masiva
+          </Button>
+          <Button onClick={handleOpenNew}>
+            <Plus className="w-4 h-4 mr-2" />
+            Nuevo Servicio
+          </Button>
+        </div>
       </div>
+      
+      {/* CSV Upload Modal */}
+      <EnhancedCSVUploadServices
+        isOpen={isCSVUploadOpen}
+        onClose={() => setIsCSVUploadOpen(false)}
+        onSuccess={(count) => {
+          toast({ title: "Carga completada", description: `${count} servicios cargados exitosamente` });
+        }}
+      />
 
       {/* Metrics Cards */}
       <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
