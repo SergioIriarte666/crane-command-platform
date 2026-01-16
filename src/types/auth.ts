@@ -5,16 +5,18 @@ export interface Tenant {
   name: string;
   slug: string;
   logo_url: string | null;
-  primary_color: string;
+  primary_color?: string;
   address: string | null;
   phone: string | null;
   email: string | null;
   tax_id: string | null;
-  plan: 'basic' | 'professional' | 'enterprise';
+  plan?: 'basic' | 'professional' | 'enterprise';
   is_active: boolean;
-  max_users: number;
-  max_cranes: number;
-  max_operators: number | null;
+  max_users?: number;
+  max_cranes?: number;
+  max_operators?: number | null;
+  folio_format?: string;
+  next_folio_number?: number;
   created_at: string;
   updated_at: string;
 }
