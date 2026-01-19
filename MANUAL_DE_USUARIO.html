@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manual de Usuario - NTMS</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap');
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 40px;
+            background-color: #fff;
+        }
+
+        h1 {
+            color: #2c3e50;
+            font-size: 2.5em;
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 10px;
+            margin-bottom: 30px;
+        }
+
+        h2 {
+            color: #2980b9;
+            margin-top: 40px;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 5px;
+        }
+
+        h3 {
+            color: #16a085;
+            margin-top: 25px;
+        }
+
+        p {
+            margin-bottom: 15px;
+            text-align: justify;
+        }
+
+        ul {
+            margin-bottom: 15px;
+        }
+
+        li {
+            margin-bottom: 5px;
+        }
+
+        code {
+            background-color: #f8f9fa;
+            padding: 2px 5px;
+            border-radius: 3px;
+            font-family: monospace;
+            color: #e74c3c;
+        }
+
+        .toc {
+            background-color: #f8f9fa;
+            padding: 20px;
+            border-radius: 5px;
+            border: 1px solid #e9ecef;
+            margin-bottom: 40px;
+        }
+
+        .toc h2 {
+            margin-top: 0;
+            font-size: 1.5em;
+            color: #34495e;
+            border-bottom: none;
+        }
+
+        .toc ul {
+            list-style-type: none;
+            padding-left: 0;
+        }
+
+        .toc li {
+            margin-bottom: 10px;
+        }
+
+        .toc a {
+            text-decoration: none;
+            color: #3498db;
+            font-weight: bold;
+        }
+
+        .toc a:hover {
+            text-decoration: underline;
+        }
+
+        .note {
+            background-color: #fff3cd;
+            border-left: 5px solid #ffc107;
+            padding: 15px;
+            margin: 20px 0;
+        }
+
+        .footer {
+            margin-top: 50px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+            text-align: center;
+            font-size: 0.9em;
+            color: #7f8c8d;
+        }
+
+        @media print {
+            body {
+                padding: 0;
+                max-width: 100%;
+            }
+            h1 {
+                page-break-before: always;
+            }
+            h1:first-child {
+                page-break-before: auto;
+            }
+            a {
+                text-decoration: none;
+                color: #000;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Manual de Usuario <br><small style="font-size: 0.6em; color: #7f8c8d;">NTMS Sistema de Gestión de Grúas</small></h1>
+
+    <div class="toc">
+        <h2>Índice</h2>
+        <ul>
+            <li><a href="#intro">1. Introducción</a></li>
+            <li><a href="#install">2. Instalación y Configuración</a></li>
+            <li><a href="#features">3. Funcionalidades Principales</a></li>
+            <li><a href="#troubleshooting">4. Solución de Problemas</a></li>
+            <li><a href="#faq">5. Preguntas Frecuentes (FAQ)</a></li>
+            <li><a href="#glossary">6. Glosario de Términos</a></li>
+        </ul>
+    </div>
+
+    <h2 id="intro">1. Introducción</h2>
+
+    <h3>Propósito del Sistema</h3>
+    <p>El <strong>NTMS (Sistema de Gestión de Grúas)</strong> es una plataforma integral diseñada para la administración eficiente de empresas de grúas. Permite gestionar operaciones, facturación, inventario, proveedores, flota y recursos humanos en un entorno centralizado y seguro.</p>
+
+    <h3>Público Objetivo</h3>
+    <p>Este manual está dirigido a los siguientes perfiles de usuario:</p>
+    <ul>
+        <li><strong>Administradores de Empresa</strong>: Responsables de la configuración general y gestión del negocio.</li>
+        <li><strong>Despachadores (Dispatchers)</strong>: Encargados de la asignación y seguimiento de servicios y operadores.</li>
+        <li><strong>Operadores</strong>: Personal en campo que ejecuta los servicios de grúa.</li>
+        <li><strong>Personal Administrativo</strong>: Encargados de facturación y cobranza.</li>
+    </ul>
+
+    <h3>Requisitos Previos</h3>
+    <p>Para utilizar el sistema, es necesario contar con:</p>
+    <ul>
+        <li>Un dispositivo con conexión a internet (Computadora, Tablet o Smartphone).</li>
+        <li>Un navegador web moderno (Google Chrome, Mozilla Firefox, Safari o Microsoft Edge).</li>
+        <li>Credenciales de acceso (Correo electrónico y contraseña) proporcionadas por el administrador.</li>
+    </ul>
+
+    <h2 id="install">2. Instalación y Configuración</h2>
+
+    <h3>Requerimientos del Sistema</h3>
+    <p>El sistema opera en la nube, por lo que no requiere instalación de software local en las estaciones de trabajo.</p>
+    <ul>
+        <li><strong>Hardware</strong>: Cualquier dispositivo capaz de ejecutar un navegador web moderno.</li>
+        <li><strong>Software</strong>: Navegador web actualizado.</li>
+    </ul>
+
+    <h3>Acceso al Sistema</h3>
+    <ol>
+        <li>Abra su navegador web.</li>
+        <li>Navegue a la URL del sistema (proporcionada por su proveedor).</li>
+        <li>Ingrese su correo electrónico y contraseña en la pantalla de inicio de sesión.</li>
+        <li>Haga clic en "Iniciar Sesión".</li>
+    </ol>
+
+    <h3>Configuración Inicial (Para Administradores)</h3>
+    <p>Al ingresar por primera vez como administrador de una nueva empresa (Tenant):</p>
+    
+    <h4>1. Perfil de Empresa</h4>
+    <p>Diríjase a <code>Configuración > Empresa</code>. Complete la información fiscal (RFC, Razón Social, Dirección). Suba el logotipo de la empresa y configure los colores corporativos para personalizar la interfaz.</p>
+
+    <h4>2. Gestión de Usuarios y Roles</h4>
+    <p>Vaya a <code>Configuración > Usuarios</code>. Invite a nuevos usuarios mediante su correo electrónico. Asigne roles específicos (<code>admin</code>, <code>dispatcher</code>, <code>operator</code>) según las funciones de cada empleado.</p>
+
+    <h4>3. Configuración de Catálogos</h4>
+    <p>Configure las listas de precios, tipos de servicios y zonas de cobertura en el módulo de configuración.</p>
+
+    <h2 id="features">3. Funcionalidades Principales</h2>
+
+    <h3>Panel de Control (Dashboard)</h3>
+    <p>Una vista general del estado de la empresa que incluye gráficas de ingresos y servicios recientes, indicadores clave de rendimiento (KPIs) y alertas de mantenimiento y documentos vencidos.</p>
+
+    <h3>Gestión de Clientes</h3>
+    <p>Módulo para administrar la base de datos de clientes.</p>
+    <ul>
+        <li><strong>Tipos de Clientes</strong>: Particulares, Empresas, Aseguradoras, Gobierno.</li>
+        <li><strong>Funciones</strong>: Registro de datos fiscales y contactos, historial de servicios y facturación, configuración de condiciones de crédito y límites.</li>
+    </ul>
+
+    <h3>Gestión de Flota (Grúas)</h3>
+    <p>Control total sobre los vehículos de la empresa.</p>
+    <ul>
+        <li><strong>Registro</strong>: Información técnica, placas, número de unidad.</li>
+        <li><strong>Documentación</strong>: Control de seguros, permisos y verificaciones con alertas de vencimiento.</li>
+        <li><strong>Mantenimiento</strong>: Programación y seguimiento de mantenimientos preventivos y correctivos.</li>
+    </ul>
+
+    <h3>Gestión de Operadores</h3>
+    <p>Administración del personal operativo.</p>
+    <ul>
+        <li><strong>Perfiles</strong>: Datos personales, licencias, certificaciones médicas.</li>
+        <li><strong>Comisiones</strong>: Configuración de esquemas de pago (porcentaje, fijo o mixto).</li>
+        <li><strong>Documentos</strong>: Almacenamiento digital de licencias y certificaciones.</li>
+    </ul>
+
+    <h3>Operaciones y Servicios</h3>
+    <p>El núcleo del sistema para la gestión del trabajo diario.</p>
+    <ul>
+        <li><strong>Creación de Servicios</strong>: Registro de solicitudes con origen, destino, cliente y tipo de grúa requerida.</li>
+        <li><strong>Pipeline de Servicios</strong>: Tablero visual (Kanban) para mover servicios entre estados (Pendiente, En Curso, Terminado, Facturado).</li>
+        <li><strong>Asignación</strong>: Vinculación de operadores y grúas a servicios específicos.</li>
+    </ul>
+
+    <h3>Facturación y Finanzas</h3>
+    <ul>
+        <li><strong>Facturación</strong>: Generación de facturas electrónicas a partir de servicios completados.</li>
+        <li><strong>Cobranza</strong>: Seguimiento de facturas pendientes y registro de pagos.</li>
+        <li><strong>Costos</strong>: Registro de gastos operativos asociados a vehículos o servicios.</li>
+    </ul>
+
+    <h3>Inventario</h3>
+    <p>Control de refacciones y herramientas. Gestión de entradas y salidas de almacén y asignación de herramientas a unidades específicas.</p>
+
+    <h3>Reportes</h3>
+    <p>Generación de informes detallados para la toma de decisiones, incluyendo reportes financieros (Ingresos, Gastos) y operativos (Servicios por operador, Eficiencia de flota).</p>
+
+    <h2 id="troubleshooting">4. Solución de Problemas</h2>
+
+    <h3>Problemas Frecuentes</h3>
+
+    <h4>No puedo iniciar sesión</h4>
+    <p>Verifique que su correo y contraseña sean correctos. Asegúrese de que su cuenta no esté suspendida. Utilice la opción "¿Olvidaste tu contraseña?" para restablecerla.</p>
+
+    <h4>No veo ciertos módulos en el menú</h4>
+    <p>Esto se debe a los permisos de su rol. Contacte a su administrador si necesita acceso adicional.</p>
+
+    <h4>Error al subir archivos</h4>
+    <p>Verifique que el archivo no exceda el límite de tamaño permitido (generalmente 5MB) y asegúrese de que el formato sea compatible (PDF, JPG, PNG).</p>
+
+    <h3>Códigos de Error Comunes</h3>
+    <ul>
+        <li><strong>401 Unauthorized</strong>: Su sesión ha expirado o no tiene permiso para realizar esta acción. Inicie sesión nuevamente.</li>
+        <li><strong>404 Not Found</strong>: El recurso que busca (servicio, cliente, etc.) no existe o fue eliminado.</li>
+        <li><strong>500 Server Error</strong>: Error interno del sistema. Contacte a soporte técnico.</li>
+    </ul>
+
+    <div class="note">
+        <strong>Contacto para Soporte Técnico:</strong><br>
+        Si el problema persiste, contacte al equipo de soporte:<br>
+        Email: soporte@ntms.com<br>
+        Teléfono: +52 (55) 1234-5678<br>
+        Horario: Lunes a Viernes, 9:00 AM - 6:00 PM
+    </div>
+
+    <h2 id="faq">5. Preguntas Frecuentes (FAQ)</h2>
+
+    <p><strong>¿Puedo usar el sistema desde mi celular?</strong><br>
+    Sí, el sistema es responsivo y se adapta a pantallas de dispositivos móviles, permitiendo a los operadores gestionar servicios desde el campo.</p>
+
+    <p><strong>¿Mis datos están seguros?</strong><br>
+    Sí, utilizamos encriptación y aislamiento de datos (Multi-Tenant) para asegurar que la información de su empresa sea privada y segura.</p>
+
+    <p><strong>¿Cómo agrego una nueva grúa?</strong><br>
+    Vaya al módulo de "Flota", haga clic en "Nueva Grúa" y complete el formulario con la información del vehículo.</p>
+
+    <p><strong>¿Qué hago si un operador olvida su contraseña?</strong><br>
+    Un administrador puede enviar un correo de restablecimiento de contraseña desde el módulo de Usuarios.</p>
+
+    <h2 id="glossary">6. Glosario de Términos</h2>
+    <ul>
+        <li><strong>Tenant</strong>: Se refiere a la "Empresa" o "Organización" dentro del sistema. Cada tenant tiene sus propios datos aislados.</li>
+        <li><strong>Dispatcher</strong>: Rol de usuario encargado de la logística y asignación de servicios.</li>
+        <li><strong>RLS (Row Level Security)</strong>: Tecnología de seguridad que garantiza que cada usuario solo vea los datos que le corresponden.</li>
+        <li><strong>Pipeline</strong>: Vista visual del flujo de trabajo donde los servicios se representan como tarjetas que avanzan por diferentes etapas.</li>
+        <li><strong>PO (Purchase Order)</strong>: Orden de Compra, documento requerido por algunos clientes para procesar la facturación.</li>
+    </ul>
+
+    <div class="footer">
+        &copy; 2026 NTMS - Sistema de Gestión de Grúas. Todos los derechos reservados.
+    </div>
+
+</body>
+</html>
