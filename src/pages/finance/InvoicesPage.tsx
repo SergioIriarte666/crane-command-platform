@@ -309,7 +309,7 @@ export default function InvoicesPage() {
               return (
                 <TableRow key={inv.id}>
                   <TableCell className="text-sm text-muted-foreground">
-                    {format(new Date(inv.created_at), 'dd/MM/yyyy')}
+                    {inv.created_at ? format(new Date(inv.created_at), 'dd/MM/yyyy') : '—'}
                   </TableCell>
                   <TableCell className="font-mono">
                     {inv.fiscal_folio || '—'}

@@ -62,7 +62,7 @@ export default function Register() {
           setInvitation({
             id: data.id,
             email: data.email,
-            role: data.role,
+            role: data.role ?? 'operator',
             tenant: data.tenant as unknown as { name: string },
           });
         }

@@ -272,7 +272,7 @@ export default function ReconciliationPage() {
                           <TableCell>{invoice.client?.name || 'N/A'}</TableCell>
                           <TableCell>{format(new Date(invoice.issue_date), 'dd/MM/yyyy')}</TableCell>
                           <TableCell>{format(new Date(invoice.due_date), 'dd/MM/yyyy')}</TableCell>
-                          <TableCell className="text-right">{formatCurrency(invoice.total)}</TableCell>
+                          <TableCell className="text-right">{formatCurrency(invoice.total ?? 0)}</TableCell>
                           <TableCell>
                             <Badge variant="outline" className={
                               invoice.status === 'overdue' ? 'text-red-500 border-red-500' :

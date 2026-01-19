@@ -86,6 +86,42 @@ export function useCosts(filters?: CostFilters) {
     },
   });
 
+  const createCostsBulk = useMutation({
+    mutationFn: async (costs: Omit<CostInsert, 'tenant_id'>[]) => {
+      const tenantId = authUser?.tenant?.id;
+      if (!tenantId) throw new Error('No se encontró el tenant del usuario');
+      if (!costs.length) return [];
+
+      const { data, error } = await supabase
+        .from('costs')
+        .insert(
+          costs.map((c) => ({
+            ...c,
+            tenant_id: tenantId,
+            created_by: authUser?.id ?? null,
+          }))
+        )
+        .select();
+
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ['costs'] });
+      toast({
+        title: 'Costos creados',
+        description: `${data?.length ?? 0} costos registrados correctamente.`,
+      });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: 'Error al crear costos',
+        description: error.message,
+        variant: 'destructive',
+      });
+    },
+  });
+
   const updateCost = useMutation({
     mutationFn: async ({ id, ...cost }: CostUpdate & { id: string }) => {
       const { data, error } = await supabase

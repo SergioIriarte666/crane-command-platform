@@ -31,7 +31,7 @@ export function useSuppliers() {
         .insert({
           ...supplier,
           tenant_id: authUser.tenant.id,
-          created_by: authUser.profile.id,
+          created_by: authUser?.profile?.id ?? null,
         })
         .select()
         .single();

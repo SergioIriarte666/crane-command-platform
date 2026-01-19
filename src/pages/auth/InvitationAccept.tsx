@@ -54,7 +54,7 @@ export default function InvitationAccept() {
           const invitationData: InvitationData = {
             id: data.id,
             email: data.email,
-            role: data.role,
+            role: data.role ?? 'operator',
             expires_at: data.expires_at,
             tenant: data.tenant as unknown as { name: string },
           };

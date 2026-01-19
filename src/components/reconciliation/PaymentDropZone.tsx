@@ -114,14 +114,14 @@ export function PaymentDropZone({ payment, draggedAmount, onConfirm }: PaymentDr
               <>
                 <AlertTriangle className="h-4 w-4 text-amber-600" />
                 <span className="text-amber-600 font-medium">
-                  Diferencia: {formatCurrency(amountDiff)}
+                  Diferencia: {formatCurrency(amountDiff ?? 0)}
                 </span>
               </>
             ) : (
               <>
                 <AlertTriangle className="h-4 w-4 text-red-600" />
                 <span className="text-red-600 font-medium">
-                  Diferencia significativa: {formatCurrency(amountDiff)}
+                  Diferencia significativa: {formatCurrency(amountDiff ?? 0)}
                 </span>
               </>
             )}

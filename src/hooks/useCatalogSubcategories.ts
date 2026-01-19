@@ -6,7 +6,7 @@ export interface CatalogSubcategory {
   id: string;
   name: string;
   code: string;
-  parent_id: string;
+  parent_id: string | null;
 }
 
 export function useCatalogSubcategories(parentId: string | null) {

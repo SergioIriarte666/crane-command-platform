@@ -47,12 +47,13 @@ export function useReconciliation() {
 
   const importTransactions = useMutation({
     mutationFn: async (transactions: Omit<BankTransactionInsert, 'tenant_id'>[]) => {
-      if (!authUser?.tenant?.id) throw new Error('No tenant');
+      const tenantId = authUser?.tenant?.id;
+      if (!tenantId) throw new Error('No tenant');
 
       const batch = new Date().toISOString();
-      const records = transactions.map(t => ({
+      const records = transactions.map((t) => ({
         ...t,
-        tenant_id: authUser.tenant.id,
+        tenant_id: tenantId,
         import_batch: batch,
       }));
 
@@ -75,6 +76,9 @@ export function useReconciliation() {
 
   const matchTransaction = useMutation({
     mutationFn: async ({ transactionId, paymentId }: { transactionId: string; paymentId: string }) => {
+      const profileId = authUser?.profile?.id;
+      if (!profileId) throw new Error('No profile');
+
       // Update bank transaction
       const { error: txError } = await supabase
         .from('bank_transactions')
@@ -82,7 +86,7 @@ export function useReconciliation() {
           status: 'matched' as ReconciliationStatus,
           matched_payment_id: paymentId,
           matched_at: new Date().toISOString(),
-          matched_by: authUser?.profile.id,
+          matched_by: profileId,
         })
         .eq('id', transactionId);
 
@@ -95,7 +99,7 @@ export function useReconciliation() {
           reconciliation_id: transactionId,
           status: 'confirmed',
           confirmed_at: new Date().toISOString(),
-          confirmed_by: authUser?.profile.id,
+          confirmed_by: profileId,
         })
         .eq('id', paymentId);
 
@@ -117,12 +121,15 @@ export function useReconciliation() {
 
   const confirmPaymentDirectly = useMutation({
     mutationFn: async (paymentId: string) => {
+      const profileId = authUser?.profile?.id;
+      if (!profileId) throw new Error('No profile');
+
       const { error } = await supabase
         .from('payments')
         .update({
           status: 'confirmed',
           confirmed_at: new Date().toISOString(),
-          confirmed_by: authUser?.profile.id,
+          confirmed_by: profileId,
         })
         .eq('id', paymentId);
 

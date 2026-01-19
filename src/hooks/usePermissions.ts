@@ -108,20 +108,24 @@ export function useUpdateRolePermissions() {
       tenantId: string | null;
     }) => {
       // Determine which tenant_id to use
-      const targetTenantId = isSuperAdmin() && tenantId === null 
-        ? null 
+      const resolvedTenantId = isSuperAdmin() && tenantId === null
+        ? null
         : (tenantId || authUser?.tenant?.id);
-      
+
+      if (resolvedTenantId === undefined) {
+        throw new Error('No tenant');
+      }
+
       // Delete existing permissions for this role/tenant combo
       let deleteQuery = supabase
         .from('role_permissions')
         .delete()
         .eq('role', role);
-      
-      if (targetTenantId === null) {
+
+      if (resolvedTenantId === null) {
         deleteQuery = deleteQuery.is('tenant_id', null);
       } else {
-        deleteQuery = deleteQuery.eq('tenant_id', targetTenantId);
+        deleteQuery = deleteQuery.eq('tenant_id', resolvedTenantId);
       }
       
       const { error: deleteError } = await deleteQuery;

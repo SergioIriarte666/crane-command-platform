@@ -103,7 +103,11 @@ export function UsersSettings() {
       .slice(0, 2);
   };
 
-  const getUserRole = (user: typeof users extends (infer T)[] ? T : never) => {
+  type TenantUser = NonNullable<typeof users>[number] & {
+    user_roles?: Array<{ role: string }> | null;
+  };
+
+  const getUserRole = (user: TenantUser) => {
     const role = user.user_roles?.[0]?.role;
     return role || 'operator';
   };

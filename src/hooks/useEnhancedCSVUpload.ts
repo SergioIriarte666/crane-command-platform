@@ -99,8 +99,8 @@ export function useEnhancedCSVUpload() {
       return null;
     }
 
-    if (!authUser?.tenant?.id) {
-      toast.error('No se encontró el tenant');
+    if (!authUser?.tenant?.id || !authUser?.profile?.id) {
+      toast.error('No se encontró el tenant o el perfil');
       return null;
     }
 

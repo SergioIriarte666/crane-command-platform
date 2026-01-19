@@ -1179,95 +1179,6 @@ export type Database = {
           },
         ]
       }
-      inventory_batches: {
-        Row: {
-          batch_number: string
-          cost: number | null
-          created_at: string
-          created_by: string | null
-          expiration_date: string | null
-          id: string
-          item_id: string
-          tenant_id: string
-        }
-        Insert: {
-          batch_number: string
-          cost?: number | null
-          created_at?: string
-          created_by?: string | null
-          expiration_date?: string | null
-          id?: string
-          item_id: string
-          tenant_id: string
-        }
-        Update: {
-          batch_number?: string
-          cost?: number | null
-          created_at?: string
-          created_by?: string | null
-          expiration_date?: string | null
-          id?: string
-          item_id?: string
-          tenant_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "inventory_batches_item_id_fkey"
-            columns: ["item_id"]
-            isOneToOne: false
-            referencedRelation: "inventory_items"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "inventory_batches_tenant_id_fkey"
-            columns: ["tenant_id"]
-            isOneToOne: false
-            referencedRelation: "tenants"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      inventory_locations: {
-        Row: {
-          created_at: string
-          description: string | null
-          id: string
-          name: string
-          parent_id: string | null
-          tenant_id: string
-          type: string
-          updated_at: string
-        }
-        Insert: {
-          created_at?: string
-          description?: string | null
-          id?: string
-          name: string
-          parent_id?: string | null
-          tenant_id: string
-          type: string
-          updated_at?: string
-        }
-        Update: {
-          created_at?: string
-          description?: string | null
-          id?: string
-          name?: string
-          parent_id?: string | null
-          tenant_id?: string
-          type?: string
-          updated_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "inventory_locations_tenant_id_fkey"
-            columns: ["tenant_id"]
-            isOneToOne: false
-            referencedRelation: "tenants"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       inventory_items: {
         Row: {
           barcode: string | null
@@ -1347,12 +1258,10 @@ export type Database = {
       }
       inventory_movements: {
         Row: {
-          batch_id: string | null
           created_at: string | null
           created_by: string | null
           id: string
           item_id: string
-          location_id: string | null
           notes: string | null
           quantity: number
           reference_id: string | null
@@ -1362,12 +1271,10 @@ export type Database = {
           unit_cost: number | null
         }
         Insert: {
-          batch_id?: string | null
           created_at?: string | null
           created_by?: string | null
           id?: string
           item_id: string
-          location_id?: string | null
           notes?: string | null
           quantity: number
           reference_id?: string | null
@@ -1377,12 +1284,10 @@ export type Database = {
           unit_cost?: number | null
         }
         Update: {
-          batch_id?: string | null
           created_at?: string | null
           created_by?: string | null
           id?: string
           item_id?: string
-          location_id?: string | null
           notes?: string | null
           quantity?: number
           reference_id?: string | null
@@ -1393,24 +1298,10 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "inventory_movements_batch_id_fkey"
-            columns: ["batch_id"]
-            isOneToOne: false
-            referencedRelation: "inventory_batches"
-            referencedColumns: ["id"]
-          },
-          {
             foreignKeyName: "inventory_movements_item_id_fkey"
             columns: ["item_id"]
             isOneToOne: false
             referencedRelation: "inventory_items"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "inventory_movements_location_id_fkey"
-            columns: ["location_id"]
-            isOneToOne: false
-            referencedRelation: "inventory_locations"
             referencedColumns: ["id"]
           },
           {

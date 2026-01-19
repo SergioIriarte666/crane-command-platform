@@ -183,6 +183,8 @@ export function useInventory() {
         cost?: number;
     }) => {
         if (!authUser?.tenant?.id) throw new Error('No tenant');
+        if (!authUser?.profile?.id) throw new Error('No user profile');
+
         const { data, error } = await supabase
             .from('inventory_batches')
             .insert({

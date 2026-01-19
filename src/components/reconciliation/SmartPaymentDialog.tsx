@@ -90,7 +90,7 @@ export function SmartPaymentDialog({ open, onOpenChange }: SmartPaymentDialogPro
         invoice_id: selectedInvoiceId || null,
         status: confirmImmediately ? 'confirmed' : 'pending',
         confirmed_at: confirmImmediately ? new Date().toISOString() : null,
-        confirmed_by: confirmImmediately ? authUser?.profile.id : null,
+        confirmed_by: confirmImmediately ? (authUser?.profile?.id ?? null) : null,
       });
       
       // Invalidate additional queries for state updates
