@@ -223,6 +223,7 @@ export function useCosts(filters?: CostFilters) {
     error: query.error,
     refetch: query.refetch,
     createCost,
+    createCostsBulk,
     updateCost,
     deleteCost,
     approveCost,
