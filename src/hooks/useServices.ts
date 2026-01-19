@@ -49,13 +49,27 @@ export function useServices() {
   });
 
   const createService = useMutation({
-    mutationFn: async (service: Omit<ServiceInsert, 'tenant_id' | 'folio'> & { 
-      custom_folio?: string;
-      operators?: Array<{ operatorId: string; commission: number; role: string }>;
-      costs?: Array<{ category_id: string; description: string; amount: number; quantity: number; unitPrice: number; subcategory?: string; notes?: string; cost_date?: string }>;
-    }) => {
-      if (!authUser?.tenant?.id) throw new Error('No tenant');
-      
+    mutationFn: async (
+      service: Omit<ServiceInsert, 'tenant_id' | 'folio'> & {
+        custom_folio?: string;
+        operators?: Array<{ operatorId: string; commission: number; role: string }>;
+        costs?: Array<{
+          category_id: string;
+          description: string;
+          amount: number;
+          quantity: number;
+          unitPrice: number;
+          subcategory?: string;
+          notes?: string;
+          cost_date?: string;
+        }>;
+      }
+    ) => {
+      const tenantId = authUser?.tenant?.id;
+      const profileId = authUser?.profile?.id;
+      if (!tenantId) throw new Error('No tenant');
+      if (!profileId) throw new Error('No profile');
+
       const { custom_folio, operators, costs, ...serviceData } = service;
       let folio: string;
 
@@ -64,7 +78,7 @@ export function useServices() {
         const { data: existing } = await supabase
           .from('services')
           .select('id')
-          .eq('tenant_id', authUser.tenant.id)
+          .eq('tenant_id', tenantId)
           .eq('folio', custom_folio)
           .maybeSingle();
 
@@ -75,8 +89,8 @@ export function useServices() {
       } else {
         // Generate folio automatically
         const { data: generatedFolio, error: folioError } = await supabase
-          .rpc('generate_service_folio', { _tenant_id: authUser.tenant.id });
-        
+          .rpc('generate_service_folio', { _tenant_id: tenantId });
+
         if (folioError) throw folioError;
         folio = generatedFolio;
       }
@@ -86,8 +100,8 @@ export function useServices() {
         .insert({
           ...serviceData,
           folio,
-          tenant_id: authUser.tenant.id,
-          created_by: authUser.profile.id,
+          tenant_id: tenantId,
+          created_by: profileId,
         })
         .select()
         .single();
@@ -96,9 +110,9 @@ export function useServices() {
 
       // Insert service operators
       if (operators && operators.length > 0) {
-        const operatorsToInsert = operators.map(op => ({
+        const operatorsToInsert = operators.map((op) => ({
           service_id: data.id,
-          tenant_id: authUser.tenant.id,
+          tenant_id: tenantId,
           operator_id: op.operatorId,
           role: op.role,
           commission: op.commission,
@@ -114,9 +128,9 @@ export function useServices() {
       // Insert service costs
       if (costs && costs.length > 0) {
         const today = new Date().toISOString().split('T')[0];
-        const costsToInsert = costs.map(cost => ({
+        const costsToInsert = costs.map((cost) => ({
           service_id: data.id,
-          tenant_id: authUser.tenant.id,
+          tenant_id: tenantId,
           category_id: cost.category_id || null,
           description: cost.description,
           amount: cost.amount,
@@ -148,11 +162,29 @@ export function useServices() {
   });
 
   const updateService = useMutation({
-    mutationFn: async ({ id, operators, costs, ...updates }: ServiceUpdate & { 
-      id: string;
-      operators?: Array<{ operatorId: string; commission: number; role: string }>;
-      costs?: Array<{ category_id: string; description: string; amount: number; quantity: number; unitPrice: number; subcategory?: string; notes?: string; cost_date?: string }>;
-    }) => {
+    mutationFn: async (
+      {
+        id,
+        operators,
+        costs,
+        ...updates
+      }: ServiceUpdate & {
+        id: string;
+        operators?: Array<{ operatorId: string; commission: number; role: string }>;
+        costs?: Array<{
+          category_id: string;
+          description: string;
+          amount: number;
+          quantity: number;
+          unitPrice: number;
+          subcategory?: string;
+          notes?: string;
+          cost_date?: string;
+        }>;
+      }
+    ) => {
+      const tenantId = authUser?.tenant?.id;
+
       const { data, error } = await supabase
         .from('services')
         .update(updates)
@@ -164,15 +196,12 @@ export function useServices() {
 
       // Sync operators: delete existing and insert new ones
       if (operators !== undefined) {
-        await supabase
-          .from('service_operators')
-          .delete()
-          .eq('service_id', id);
+        await supabase.from('service_operators').delete().eq('service_id', id);
 
-        if (operators.length > 0 && authUser?.tenant?.id) {
-          const operatorsToInsert = operators.map(op => ({
+        if (operators.length > 0 && tenantId) {
+          const operatorsToInsert = operators.map((op) => ({
             service_id: id,
-            tenant_id: authUser.tenant.id,
+            tenant_id: tenantId,
             operator_id: op.operatorId,
             role: op.role,
             commission: op.commission,
@@ -187,17 +216,14 @@ export function useServices() {
       }
 
       // Sync costs: delete existing and insert current form costs
-      if (costs !== undefined && authUser?.tenant?.id) {
-        await supabase
-          .from('service_costs')
-          .delete()
-          .eq('service_id', id);
+      if (costs !== undefined && tenantId) {
+        await supabase.from('service_costs').delete().eq('service_id', id);
 
         if (costs.length > 0) {
           const today = new Date().toISOString().split('T')[0];
-          const costsToInsert = costs.map(cost => ({
+          const costsToInsert = costs.map((cost) => ({
             service_id: id,
-            tenant_id: authUser.tenant.id,
+            tenant_id: tenantId,
             category_id: cost.category_id || null,
             description: cost.description,
             amount: cost.amount,

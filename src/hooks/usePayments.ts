@@ -35,7 +35,7 @@ export function usePayments() {
         .insert({
           ...payment,
           tenant_id: authUser.tenant.id,
-          created_by: authUser.profile.id,
+          created_by: authUser?.profile?.id ?? null,
         })
         .select()
         .single();
@@ -61,7 +61,7 @@ export function usePayments() {
         .update({
           status: 'confirmed' as PaymentStatus,
           confirmed_at: new Date().toISOString(),
-          confirmed_by: authUser?.profile.id,
+          confirmed_by: authUser?.profile?.id ?? null,
         })
         .eq('id', id)
         .select()

@@ -27,16 +27,19 @@ export function useOperators() {
       if (!authUser?.tenant?.id) throw new Error('No tenant');
       
       // Check plan limits
-      if (authUser.tenant.max_operators !== null) {
+      const maxOperators = authUser.tenant.max_operators;
+      if (typeof maxOperators === 'number') {
         const { count, error: countError } = await supabase
           .from('operators')
           .select('*', { count: 'exact', head: true })
           .eq('tenant_id', authUser.tenant.id);
-          
+
         if (countError) throw countError;
-        
-        if (count !== null && count >= authUser.tenant.max_operators) {
-          throw new Error(`Has alcanzado el límite de operadores de tu plan (${authUser.tenant.max_operators}). Contacta a soporte para aumentar tu plan.`);
+
+        if (count !== null && count >= maxOperators) {
+          throw new Error(
+            `Has alcanzado el límite de operadores de tu plan (${maxOperators}). Contacta a soporte para aumentar tu plan.`
+          );
         }
       }
 
@@ -45,7 +48,7 @@ export function useOperators() {
         .insert({
           ...operator,
           tenant_id: authUser.tenant.id,
-          created_by: authUser.profile.id,
+          created_by: authUser?.profile?.id ?? null,
         })
         .select()
         .single();

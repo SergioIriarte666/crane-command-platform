@@ -60,7 +60,7 @@ export function useClosures() {
           ...closure,
           folio,
           tenant_id: authUser.tenant.id,
-          created_by: authUser.profile.id,
+          created_by: authUser?.profile?.id ?? null,
         })
         .select()
         .single();
@@ -104,7 +104,7 @@ export function useClosures() {
 
       if (status === 'approved') {
         updates.approved_at = new Date().toISOString();
-        updates.approved_by = authUser?.profile.id;
+        updates.approved_by = authUser?.profile?.id ?? null;
       }
 
       const { data, error } = await supabase

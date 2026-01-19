@@ -84,17 +84,20 @@ export function useCreateInvitation() {
       }
 
       // Check plan limits
-      if (authUser.tenant.max_users !== null) {
+      const maxUsers = authUser.tenant.max_users;
+      if (typeof maxUsers === 'number') {
         const { count: userCount, error: countError } = await supabase
           .from('profiles')
           .select('*', { count: 'exact', head: true })
           .eq('tenant_id', authUser.tenant.id)
           .eq('is_active', true);
-          
+
         if (countError) throw countError;
-        
-        if (userCount !== null && userCount >= authUser.tenant.max_users) {
-          throw new Error(`Has alcanzado el límite de usuarios de tu plan (${authUser.tenant.max_users}). Contacta a soporte para aumentar tu plan.`);
+
+        if (userCount !== null && userCount >= maxUsers) {
+          throw new Error(
+            `Has alcanzado el límite de usuarios de tu plan (${maxUsers}). Contacta a soporte para aumentar tu plan.`
+          );
         }
       }
 
@@ -149,6 +152,8 @@ export function useResendInvitation() {
 
   return useMutation({
     mutationFn: async (invitation: Invitation) => {
+      if (!user?.id) throw new Error('No user');
+
       // Delete old invitation and create new one with fresh expiry
       const { error: deleteError } = await supabase
         .from('invitations')
@@ -161,7 +166,7 @@ export function useResendInvitation() {
         tenant_id: invitation.tenant_id,
         email: invitation.email,
         role: invitation.role,
-        invited_by: user?.id,
+        invited_by: user.id,
       });
 
       if (insertError) throw insertError;
