@@ -2806,6 +2806,41 @@ export type Database = {
         }
         Relationships: []
       }
+      trial_audit_logs: {
+        Row: {
+          action: string
+          actor_id: string | null
+          created_at: string | null
+          details: Json | null
+          id: string
+          target_tenant_id: string | null
+        }
+        Insert: {
+          action: string
+          actor_id?: string | null
+          created_at?: string | null
+          details?: Json | null
+          id?: string
+          target_tenant_id?: string | null
+        }
+        Update: {
+          action?: string
+          actor_id?: string | null
+          created_at?: string | null
+          details?: Json | null
+          id?: string
+          target_tenant_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "trial_audit_logs_target_tenant_id_fkey"
+            columns: ["target_tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       trial_settings: {
         Row: {
           allowed_durations: number[] | null
@@ -2835,48 +2870,6 @@ export type Database = {
           updated_at?: string | null
         }
         Relationships: []
-      }
-      trial_audit_logs: {
-        Row: {
-          action: string
-          actor_id: string | null
-          created_at: string | null
-          details: Json | null
-          id: string
-          target_tenant_id: string | null
-        }
-        Insert: {
-          action: string
-          actor_id?: string | null
-          created_at?: string | null
-          details?: Json | null
-          id?: string
-          target_tenant_id?: string | null
-        }
-        Update: {
-          action?: string
-          actor_id?: string | null
-          created_at?: string | null
-          details?: Json | null
-          id?: string
-          target_tenant_id?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "trial_audit_logs_actor_id_fkey"
-            columns: ["actor_id"]
-            isOneToOne: false
-            referencedRelation: "users"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "trial_audit_logs_target_tenant_id_fkey"
-            columns: ["target_tenant_id"]
-            isOneToOne: false
-            referencedRelation: "tenants"
-            referencedColumns: ["id"]
-          }
-        ]
       }
       upgrade_requests: {
         Row: {
