@@ -109,9 +109,9 @@ export const exportServiceReport = async ({
 
     // Título
     doc.setFontSize(14);
-    doc.setFont(undefined, 'bold');
+    doc.setFont('helvetica', 'bold');
     doc.text('Informe de Servicios', 14, startY);
-    doc.setFont(undefined, 'normal');
+    doc.setFont('helvetica', 'normal');
     startY += 10;
     
     // Filtros aplicados
@@ -227,9 +227,9 @@ export const exportGenericReport = async ({
     let startY = await addCompanyHeader(doc, company, 15, logoUrl);
 
     doc.setFontSize(14);
-    doc.setFont(undefined, 'bold');
+    doc.setFont('helvetica', 'bold');
     doc.text(title, 14, startY);
-    doc.setFont(undefined, 'normal');
+    doc.setFont('helvetica', 'normal');
     startY += 10;
 
     const headers = columns.map(col => col.label);

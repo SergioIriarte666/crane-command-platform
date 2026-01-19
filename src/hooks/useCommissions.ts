@@ -108,7 +108,7 @@ export function useCommissions() {
           commission_fixed: commissionFixed,
           calculated_amount: calculatedAmount,
           total_amount: calculatedAmount,
-          created_by: authUser.profile.id,
+          created_by: authUser?.profile?.id ?? null,
         })
         .select()
         .single();
@@ -194,7 +194,7 @@ export function useCommissions() {
         .update({
           status: 'approved' as CommissionStatus,
           approved_at: new Date().toISOString(),
-          approved_by: authUser?.profile.id,
+          approved_by: authUser?.profile?.id ?? null,
         })
         .eq('id', id)
         .select()

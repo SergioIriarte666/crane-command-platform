@@ -119,7 +119,7 @@ export class XMLSupplierParser {
       let current: Element | null = dteElement;
       for (const part of parts) {
         if (!current) return '';
-        const child = current.querySelector(part);
+        const child: Element | null = current.querySelector(part);
         if (!child) return '';
         current = child;
       }

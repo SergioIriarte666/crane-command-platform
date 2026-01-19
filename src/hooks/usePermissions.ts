@@ -140,7 +140,7 @@ export function useUpdateRolePermissions() {
             permissionIds.map(permId => ({
               role,
               permission_id: permId,
-              tenant_id: targetTenantId,
+              tenant_id: resolvedTenantId,
             }))
           );
         

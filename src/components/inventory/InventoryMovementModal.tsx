@@ -128,8 +128,10 @@ export function InventoryMovementModal({ isOpen, onClose, item: initialItem }: I
           batch_number: values.new_batch_number,
           expiration_date: values.new_batch_expiration || undefined,
         });
-        batchId = newBatch.id;
-        createdBatchId = newBatch.id;
+        if (newBatch) {
+          batchId = newBatch.id;
+          createdBatchId = newBatch.id;
+        }
       }
       
       // Logic to structure data based on type

@@ -23,34 +23,27 @@ export function useInventory() {
     enabled: !!authUser?.tenant?.id,
   });
 
+  // Stub locations query - table not yet in schema
   const locationsQuery = useQuery({
     queryKey: ['inventory_locations', authUser?.tenant?.id],
-    queryFn: async () => {
-      if (!authUser?.tenant?.id) return [];
-      const { data, error } = await supabase
-        .from('inventory_locations')
-        .select('*')
-        .order('name');
-      if (error) throw error;
-      return data as InventoryLocation[];
+    queryFn: async (): Promise<InventoryLocation[]> => {
+      // inventory_locations table does not exist yet
+      return [];
     },
-    enabled: !!authUser?.tenant?.id,
+    enabled: false,
   });
 
+  // Stub batches query - table not yet in schema
   const batchesQuery = useQuery({
     queryKey: ['inventory_batches', authUser?.tenant?.id],
-    queryFn: async () => {
-      if (!authUser?.tenant?.id) return [];
-      const { data, error } = await supabase
-        .from('inventory_batches')
-        .select('*')
-        .order('created_at', { ascending: false });
-      if (error) throw error;
-      return data as InventoryBatch[];
+    queryFn: async (): Promise<InventoryBatch[]> => {
+      // inventory_batches table does not exist yet
+      return [];
     },
-    enabled: !!authUser?.tenant?.id,
+    enabled: false,
   });
 
+  // Movements query - simplified to work without location/batch joins
   const movementsQuery = useQuery({
     queryKey: ['inventory_movements', authUser?.tenant?.id],
     queryFn: async () => {
@@ -59,9 +52,7 @@ export function useInventory() {
         .from('inventory_movements')
         .select(`
           *,
-          item:inventory_items(name, code, unit),
-          location:inventory_locations(name),
-          batch:inventory_batches(batch_number)
+          item:inventory_items(name, code, unit)
         `)
         .order('created_at', { ascending: false });
 
@@ -175,48 +166,28 @@ export function useInventory() {
     },
   });
 
+  // Stub createBatch - table not yet in schema
   const createBatch = useMutation({
-    mutationFn: async (batch: {
-        item_id: string;
-        batch_number: string;
-        expiration_date?: string;
-        cost?: number;
-    }) => {
-        if (!authUser?.tenant?.id) throw new Error('No tenant');
-        if (!authUser?.profile?.id) throw new Error('No user profile');
-
-        const { data, error } = await supabase
-            .from('inventory_batches')
-            .insert({
-                ...batch,
-                tenant_id: authUser.tenant.id,
-                created_by: authUser.profile.id
-            })
-            .select()
-            .single();
-        if (error) throw error;
-        return data;
-    },
-    onSuccess: () => {
-        queryClient.invalidateQueries({ queryKey: ['inventory_batches'] });
-        toast.success('Lote creado exitosamente');
+    mutationFn: async (_batch: {
+      item_id: string;
+      batch_number: string;
+      expiration_date?: string;
+      cost?: number;
+    }): Promise<InventoryBatch | null> => {
+      // inventory_batches table does not exist yet
+      throw new Error('Batches feature not yet available');
     },
     onError: (error) => {
-        toast.error(`Error al crear lote: ${error.message}`);
-    }
+      toast.error(`Error al crear lote: ${error.message}`);
+    },
   });
 
+  // Stub deleteBatch - table not yet in schema
   const deleteBatch = useMutation({
-    mutationFn: async (batchId: string) => {
-      const { error } = await supabase
-        .from('inventory_batches')
-        .delete()
-        .eq('id', batchId);
-      if (error) throw error;
+    mutationFn: async (_batchId: string): Promise<void> => {
+      // inventory_batches table does not exist yet
+      throw new Error('Batches feature not yet available');
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['inventory_batches'] });
-    }
   });
 
   const generateCode = async (): Promise<string> => {
