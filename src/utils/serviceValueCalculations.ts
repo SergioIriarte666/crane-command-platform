@@ -45,7 +45,7 @@ export function isCustodyService(service: Service): boolean {
  * Detect if this is equipment rental (arriendo)
  */
 export function isEquipmentRentalService(service: Service): boolean {
-  return service.type === 'maniobra' || service.notes?.toLowerCase().includes('arriendo');
+  return service.type === 'maniobra' || (service.notes?.toLowerCase().includes('arriendo') ?? false);
 }
 
 /**

@@ -300,7 +300,7 @@ export class XMLCostParser {
     let current: Element | null = element;
     for (const part of parts) {
       if (!current) return '';
-      const child = current.querySelector(part);
+      const child: Element | null = current.querySelector(part);
       if (!child) return '';
       current = child;
     }
