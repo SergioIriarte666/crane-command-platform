@@ -9,6 +9,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { useThemeColor } from '@/hooks/useThemeColor';
 import { useApplyPreferences } from '@/hooks/useUserPreferences';
+import { TrialBanner } from '@/components/layout/TrialBanner';
+import { useTrialNotifications } from '@/hooks/useTrialNotifications';
 
 export default function DashboardLayout() {
   const { user, loading, authUser, isSuperAdmin, signOut } = useAuth();
@@ -19,6 +21,9 @@ export default function DashboardLayout() {
   
   // Apply user appearance preferences (compact mode, animations, high contrast)
   useApplyPreferences();
+
+  // Handle trial notifications
+  useTrialNotifications();
 
   if (loading) {
     return (
@@ -91,6 +96,7 @@ export default function DashboardLayout() {
       <div className="min-h-screen flex w-full bg-background">
         <AppSidebar />
         <SidebarInset className="flex-1">
+          <TrialBanner />
           <AppHeader />
           <main className="flex-1 p-6">
             <Outlet />

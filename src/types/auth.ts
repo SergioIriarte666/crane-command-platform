@@ -12,6 +12,8 @@ export interface Tenant {
   tax_id: string | null;
   plan?: 'basic' | 'professional' | 'enterprise';
   is_active: boolean;
+  is_trial?: boolean;
+  trial_ends_at?: string;
   max_users?: number;
   max_cranes?: number;
   max_operators?: number | null;

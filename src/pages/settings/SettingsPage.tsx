@@ -9,6 +9,7 @@ import { AppearanceSettings } from '@/components/settings/AppearanceSettings';
 import { CatalogSettings } from '@/components/settings/CatalogSettings';
 import { TenantsSettings } from '@/components/settings/TenantsSettings';
 import { PlansConfigSettings } from '@/components/settings/PlansConfigSettings';
+import TrialConfigSettings from '@/components/settings/TrialConfigSettings';
 import { BackupManagementSection } from '@/components/settings/BackupManagementSection';
 import { useAuth } from '@/contexts/AuthContext';
 
@@ -33,6 +34,7 @@ export default function SettingsPage() {
   const superAdminTabs = isSuperAdmin() ? [
     { id: 'tenants', label: 'Empresas', icon: Crown },
     { id: 'plans', label: 'Planes', icon: CreditCard },
+    { id: 'trials', label: 'Pruebas', icon: Shield },
   ] : [];
 
   const tabs = [...baseTabs, ...adminTabs, ...superAdminTabs];
@@ -97,6 +99,9 @@ export default function SettingsPage() {
             </TabsContent>
             <TabsContent value="plans">
               <PlansConfigSettings />
+            </TabsContent>
+            <TabsContent value="trials">
+              <TrialConfigSettings />
             </TabsContent>
           </>
         )}
