@@ -73,44 +73,84 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   useEffect(() => {
-    // Set up auth state listener FIRST
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        setSession(session);
-        setUser(session?.user ?? null);
+    let cancelled = false;
 
-        if (session?.user) {
-          try {
-            const userData = await fetchUserData(session.user.id);
-            setAuthUser(userData);
-          } catch (error) {
-            console.error('Error fetching user data in auth change:', error);
-          } finally {
-            setLoading(false);
-          }
-        } else {
-          setAuthUser(null);
-          setLoading(false);
-        }
-      }
-    );
+    const safe = (fn: () => void) => {
+      if (!cancelled) fn();
+    };
 
-    // THEN check for existing session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      
-      if (session?.user) {
-        fetchUserData(session.user.id).then(userData => {
-          setAuthUser(userData);
-          setLoading(false);
-        });
-      } else {
+    // Failsafe: never block the UI indefinitely if auth init fails.
+    const loadingTimeout = window.setTimeout(() => {
+      safe(() => {
+        console.warn('[auth] Initialization timeout reached. Forcing loading=false.');
         setLoading(false);
+      });
+    }, 12000);
+
+    // Set up auth state listener FIRST
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange(async (event, nextSession) => {
+      safe(() => {
+        setSession(nextSession);
+        setUser(nextSession?.user ?? null);
+      });
+
+      try {
+        if (nextSession?.user) {
+          const userData = await fetchUserData(nextSession.user.id);
+          safe(() => setAuthUser(userData));
+        } else {
+          safe(() => setAuthUser(null));
+        }
+      } catch (error) {
+        console.error('[auth] Error in onAuthStateChange:', error);
+        safe(() => setAuthUser(null));
+      } finally {
+        safe(() => setLoading(false));
       }
     });
 
-    return () => subscription.unsubscribe();
+    // THEN check for existing session
+    (async () => {
+      try {
+        const { data, error } = await supabase.auth.getSession();
+        if (error) throw error;
+
+        const existingSession = data.session;
+        safe(() => {
+          setSession(existingSession);
+          setUser(existingSession?.user ?? null);
+        });
+
+        if (existingSession?.user) {
+          try {
+            const userData = await fetchUserData(existingSession.user.id);
+            safe(() => setAuthUser(userData));
+          } catch (error) {
+            console.error('[auth] Error fetching user data in getSession:', error);
+            safe(() => setAuthUser(null));
+          }
+        } else {
+          safe(() => setAuthUser(null));
+        }
+      } catch (error) {
+        console.error('[auth] getSession failed:', error);
+        safe(() => {
+          setSession(null);
+          setUser(null);
+          setAuthUser(null);
+        });
+      } finally {
+        safe(() => setLoading(false));
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+      window.clearTimeout(loadingTimeout);
+      subscription.unsubscribe();
+    };
   }, []);
 
   const signIn = async (email: string, password: string) => {
