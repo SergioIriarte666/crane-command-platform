@@ -27,9 +27,7 @@ export default defineConfig(({ mode }) => ({
              if (id.includes('@radix-ui') || id.includes('lucide-react') || id.includes('cmdk') || id.includes('embla-carousel-react') || id.includes('vaul') || id.includes('sonner')) {
                return 'ui-vendor';
              }
-             if (id.includes('recharts')) {
-               return 'charts-vendor';
-             }
+             // recharts se incluye en el bundle principal para evitar errores de inicialización circular
              if (id.includes('zod') || id.includes('react-hook-form') || id.includes('@hookform')) {
                return 'forms-vendor';
              }
