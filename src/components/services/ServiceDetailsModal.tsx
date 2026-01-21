@@ -41,7 +41,8 @@ import { isCustodyService, getCustodyInfo } from '@/utils/serviceValueCalculatio
 import { toast } from 'sonner';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
-import { addCompanyHeader, addPageNumbers, safeDateFormat, safeCurrencyFormat } from '@/lib/pdfUtils';
+import { addCompanyHeader, addPageNumbers, mapTenantToCompanyInfo, safeDateFormat, safeCurrencyFormat } from '@/lib/pdfUtils';
+import { useTenant } from '@/hooks/useSettings';
 
 import { Loader2 } from 'lucide-react';
 
@@ -105,15 +106,18 @@ export function ServiceDetailsModal({
   const [activeTab, setActiveTab] = useState('general');
   const resolvedId = serviceId || initialService?.id || null;
   const { data: details, isLoading, isError } = useEnhancedServiceDetails(resolvedId);
+  const { data: tenant } = useTenant();
 
   const service = initialService || details?.service;
 
-  const handleDownloadPDF = () => {
+  const handleDownloadPDF = async () => {
     try {
       const doc = new jsPDF();
       
+      const companyInfo = mapTenantToCompanyInfo(tenant);
+      
       // Header
-      let yPos = addCompanyHeader(doc, `Orden de Servicio: ${service.folio}`);
+      let yPos = await addCompanyHeader(doc, `Orden de Servicio: ${service.folio}`, companyInfo);
       
       // 1. Client Information
       if (client) {
@@ -222,7 +226,7 @@ export function ServiceDetailsModal({
       });
 
       // Footer
-      addPageNumbers(doc);
+      addPageNumbers(doc, companyInfo);
 
       doc.save(`Servicio_${service.folio}.pdf`);
       toast.success('PDF descargado correctamente');
