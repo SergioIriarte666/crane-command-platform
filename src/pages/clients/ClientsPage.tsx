@@ -401,7 +401,7 @@ export default function ClientsPage() {
                     <TableCell>
                       <div className="flex items-center gap-1">
                         <Button variant="outline" size="icon" className="h-8 w-8" asChild>
-                          <Link to={`/vip/${client.id}`}>
+                          <Link to={`/vip/cliente/${client.id}`}>
                             <TrendingUp className="w-4 h-4" />
                           </Link>
                         </Button>
