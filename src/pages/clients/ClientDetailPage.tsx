@@ -22,6 +22,7 @@ import {
   Users,
   Loader2,
   ClipboardList,
+  LayoutList,
 } from 'lucide-react';
 import {
   ClientType,
@@ -100,12 +101,20 @@ export default function ClientDetailPage() {
             </div>
           </div>
         </div>
-        <Button asChild>
-          <Link to={`/clientes/${client.id}/editar`}>
-            <Pencil className="w-4 h-4 mr-2" />
-            Editar
-          </Link>
-        </Button>
+        <div className="flex gap-2">
+          <Button variant="outline" asChild>
+            <Link to={`/vip/cliente/${client.id}`}>
+              <LayoutList className="w-4 h-4 mr-2" />
+              Ver Pipeline
+            </Link>
+          </Button>
+          <Button asChild>
+            <Link to={`/clientes/${client.id}/editar`}>
+              <Pencil className="w-4 h-4 mr-2" />
+              Editar
+            </Link>
+          </Button>
+        </div>
       </div>
 
       {/* Content */}
