@@ -11,6 +11,7 @@ interface AuthContextType {
   signIn: (email: string, password: string) => Promise<{ error: Error | null }>;
   signUp: (email: string, password: string, fullName: string) => Promise<{ error: Error | null }>;
   signOut: () => Promise<void>;
+  refreshAuthUser: () => Promise<void>;
   hasRole: (role: AppRole) => boolean;
   isSuperAdmin: () => boolean;
   isAdmin: () => boolean;
@@ -24,51 +25,76 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [authUser, setAuthUser] = useState<AuthUser | null>(null);
   const [loading, setLoading] = useState(true);
 
-  const fetchUserData = async (userId: string): Promise<AuthUser | null> => {
+  const withTimeout = async <T,>(promise: Promise<T>, ms: number, label: string): Promise<T> => {
+    let timeoutId: number | undefined;
     try {
-      // Fetch profile
-      const { data: profile, error: profileError } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', userId)
-        .maybeSingle();
+      return await Promise.race([
+        promise,
+        new Promise<T>((_, reject) => {
+          timeoutId = window.setTimeout(() => reject(new Error(`[auth] Timeout: ${label}`)), ms);
+        }),
+      ]);
+    } finally {
+      if (timeoutId) window.clearTimeout(timeoutId);
+    }
+  };
 
-      if (profileError) throw profileError;
+  const fetchUserData = async (userId: string): Promise<AuthUser | null> => {
+    // Never fail the whole auth bootstrap just because roles/tenant fetch failed.
+    // We prefer returning at least the profile so the app can unlock tenant access.
+    let profile: Profile | null = null;
+    let roles: AppRole[] = [];
+    let tenant: Tenant | null = null;
 
-      // Fetch roles
-      const { data: userRoles, error: rolesError } = await supabase
-        .from('user_roles')
-        .select('role')
-        .eq('user_id', userId);
+    try {
+      const [{ data: profileData, error: profileError }, { data: rolesData, error: rolesError }] = await Promise.all([
+        supabase.from('profiles').select('*').eq('id', userId).maybeSingle(),
+        supabase.from('user_roles').select('role').eq('user_id', userId),
+      ]);
 
-      if (rolesError) throw rolesError;
+      if (profileError) {
+        console.error('[auth] profile fetch failed:', profileError);
+      } else {
+        profile = (profileData as Profile) || null;
+      }
 
-      const roles = userRoles?.map(r => r.role as AppRole) || [];
+      if (rolesError) {
+        console.error('[auth] roles fetch failed:', rolesError);
+      } else {
+        roles = rolesData?.map(r => r.role as AppRole) || [];
+      }
 
-      // Fetch tenant if profile has tenant_id
-      let tenant: Tenant | null = null;
+      // Tenant object is optional; some hooks can rely on profile.tenant_id directly.
       if (profile?.tenant_id) {
-        const { data: tenantData, error: tenantError } = await supabase
-          .from('tenants')
-          .select('*')
-          .eq('id', profile.tenant_id)
-          .maybeSingle();
-
-        if (!tenantError && tenantData) {
-          tenant = tenantData as Tenant;
+        try {
+          const { data: tenantData, error: tenantError } = await supabase
+            .from('tenants')
+            .select('*')
+            .eq('id', profile.tenant_id)
+            .maybeSingle();
+          if (!tenantError && tenantData) tenant = tenantData as Tenant;
+        } catch (e) {
+          console.warn('[auth] tenant fetch failed:', e);
         }
       }
 
       return {
         id: userId,
         email: profile?.email || '',
-        profile: profile as Profile | null,
+        profile,
         roles,
         tenant,
       };
     } catch (error) {
       console.error('Error fetching user data:', error);
-      return null;
+      // Return minimal shape if possible
+      return {
+        id: userId,
+        email: '',
+        profile: null,
+        roles: [],
+        tenant: null,
+      };
     }
   };
 
@@ -98,7 +124,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       try {
         if (nextSession?.user) {
-          const userData = await fetchUserData(nextSession.user.id);
+          const userData = await withTimeout(
+            fetchUserData(nextSession.user.id),
+            8000,
+            `fetchUserData (${event})`,
+          );
           safe(() => setAuthUser(userData));
         } else {
           safe(() => setAuthUser(null));
@@ -111,10 +141,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
     });
 
-    // THEN check for existing session
+    // Fallback: try to read the session, but never block initialization.
+    // Some environments can hang on getSession(); this timeout prevents lock-ups.
     (async () => {
       try {
-        const { data, error } = await supabase.auth.getSession();
+        const { data, error } = await withTimeout(supabase.auth.getSession(), 4000, 'getSession');
         if (error) throw error;
 
         const existingSession = data.session;
@@ -124,24 +155,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         });
 
         if (existingSession?.user) {
-          try {
-            const userData = await fetchUserData(existingSession.user.id);
-            safe(() => setAuthUser(userData));
-          } catch (error) {
-            console.error('[auth] Error fetching user data in getSession:', error);
-            safe(() => setAuthUser(null));
-          }
-        } else {
-          safe(() => setAuthUser(null));
+          const userData = await withTimeout(fetchUserData(existingSession.user.id), 8000, 'fetchUserData (getSession)');
+          safe(() => setAuthUser(userData));
         }
       } catch (error) {
-        console.error('[auth] getSession failed:', error);
-        safe(() => {
-          setSession(null);
-          setUser(null);
-          setAuthUser(null);
-        });
+        // Don't clear state here: onAuthStateChange (INITIAL_SESSION) is the source of truth.
+        console.warn('[auth] getSession fallback failed:', error);
       } finally {
+        // If the listener didn't fire for any reason, this prevents the 12s failsafe delay.
         safe(() => setLoading(false));
       }
     })();
@@ -182,6 +203,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setAuthUser(null);
   };
 
+  const refreshAuthUser = async () => {
+    if (!user?.id) return;
+    setLoading(true);
+    try {
+      const userData = await withTimeout(fetchUserData(user.id), 8000, 'refreshAuthUser');
+      setAuthUser(userData);
+    } catch (error) {
+      console.error('[auth] refreshAuthUser failed:', error);
+      setAuthUser(null);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const hasRole = (role: AppRole) => {
     return authUser?.roles.includes(role) || false;
   };
@@ -199,6 +234,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         signIn,
         signUp,
         signOut,
+        refreshAuthUser,
         hasRole,
         isSuperAdmin,
         isAdmin,
