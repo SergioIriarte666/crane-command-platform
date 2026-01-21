@@ -3,6 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { useEffect, useCallback } from 'react';
 import { applyPrimaryColor } from '@/hooks/useThemeColor';
+import { useTheme } from 'next-themes';
 
 export interface UserPreferences {
   theme: 'light' | 'dark' | 'system';
@@ -108,16 +109,24 @@ export function applyPreferencesToDocument(preferences: UserPreferences) {
 
 export function useApplyPreferences() {
   const { data: preferences } = useUserPreferences();
+  const { setTheme } = useTheme();
 
   useEffect(() => {
     if (preferences) {
       applyPreferencesToDocument(preferences);
+      // Apply theme from saved preferences
+      if (preferences.theme) {
+        setTheme(preferences.theme);
+      }
     }
-  }, [preferences]);
+  }, [preferences, setTheme]);
 
   const applyNow = useCallback((prefs: UserPreferences) => {
     applyPreferencesToDocument(prefs);
-  }, []);
+    if (prefs.theme) {
+      setTheme(prefs.theme);
+    }
+  }, [setTheme]);
 
   return { applyNow };
 }
