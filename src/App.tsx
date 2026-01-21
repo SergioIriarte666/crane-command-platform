@@ -1,4 +1,5 @@
 import { Toaster } from "@/components/ui/toaster";
+import VipClientPipeline from "./pages/vip/VipClientPipeline";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
@@ -154,6 +155,9 @@ const App = () => (
               {/* Placeholder routes */}
               <Route path="/notificaciones" element={<ComingSoon title="Notificaciones" />} />
               <Route path="/admin/tenants" element={<TenantsAdminPage />} />
+              
+              {/* VIP Pipeline */}
+              <Route path="/vip/cliente/:clientId" element={<VipClientPipeline />} />
             </Route>
 
             {/* 404 */}
