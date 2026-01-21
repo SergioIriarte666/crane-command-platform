@@ -5,6 +5,20 @@ export type Invoice = Database['public']['Tables']['invoices']['Row'];
 export type InvoiceInsert = Database['public']['Tables']['invoices']['Insert'];
 export type InvoiceUpdate = Database['public']['Tables']['invoices']['Update'];
 
+export interface InvoiceHistory {
+  id: string;
+  invoice_id: string;
+  changed_by: string;
+  changed_at: string;
+  changes: Record<string, { old: any; new: any }>;
+  action_type: 'create' | 'update' | 'status_change';
+  tenant_id: string;
+  user?: {
+    full_name: string;
+    email: string;
+  };
+}
+
 export type BillingClosure = Database['public']['Tables']['billing_closures']['Row'];
 export type BillingClosureInsert = Database['public']['Tables']['billing_closures']['Insert'];
 export type BillingClosureUpdate = Database['public']['Tables']['billing_closures']['Update'];

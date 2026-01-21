@@ -37,11 +37,25 @@ export const EnhancedClosureSelector: React.FC<EnhancedClosureSelectorProps> = (
   isLoading = false,
 }) => {
   const [open, setOpen] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
 
   const selectedClosure = useMemo(() => 
     closures.find(c => c.id === selectedClosureId), 
     [closures, selectedClosureId]
   );
+
+  const filteredClosures = useMemo(() => {
+    if (!searchTerm) return closures.slice(0, 50);
+    
+    const lowerSearch = searchTerm.toLowerCase();
+    return closures
+      .filter(c => 
+        c.folio.toLowerCase().includes(lowerSearch) || 
+        c.client?.name.toLowerCase().includes(lowerSearch) ||
+        (c.total?.toString() || '').includes(lowerSearch)
+      )
+      .slice(0, 50);
+  }, [closures, searchTerm]);
 
   const formatDateRange = (start: string, end: string) => {
     const fromDate = format(new Date(start), 'dd/MM/yyyy', { locale: es });
@@ -98,12 +112,16 @@ export const EnhancedClosureSelector: React.FC<EnhancedClosureSelectorProps> = (
         </PopoverTrigger>
         
         <PopoverContent className="w-[500px] p-0" align="start">
-          <Command>
-            <CommandInput placeholder="Buscar por folio, cliente o fecha..." />
+          <Command shouldFilter={false}>
+            <CommandInput 
+              placeholder="Buscar por folio, cliente o fecha..." 
+              value={searchTerm}
+              onValueChange={setSearchTerm}
+            />
             <CommandList className="max-h-[350px]">
               <CommandEmpty>No se encontraron cierres disponibles.</CommandEmpty>
               <CommandGroup>
-                {closures.map(closure => (
+                {filteredClosures.map(closure => (
                   <CommandItem
                     key={closure.id}
                     value={`${closure.folio} ${closure.client?.name || ''}`}

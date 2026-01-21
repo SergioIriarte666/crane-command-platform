@@ -7,6 +7,16 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { ChevronLeft, ChevronRight, Save, X, Receipt, CalendarIcon, Loader2 } from 'lucide-react';
@@ -30,6 +40,14 @@ const invoiceSchema = z.object({
   paymentTermsId: z.string().optional(),
   paymentDate: z.date().optional(),
   numeroFiscal: z.string().optional(),
+}).refine((data) => {
+  if (data.status === 'paid' && !data.paymentDate) {
+    return false;
+  }
+  return true;
+}, {
+  message: "La fecha de pago es requerida para facturas pagadas",
+  path: ["paymentDate"],
 });
 
 type InvoiceFormData = z.infer<typeof invoiceSchema>;
@@ -62,6 +80,8 @@ export const InvoiceForm: React.FC<InvoiceFormProps> = ({
   isLoading = false,
 }) => {
   const [currentStep, setCurrentStep] = useState(1);
+  const [showConfirmDialog, setShowConfirmDialog] = useState(false);
+  const [pendingData, setPendingData] = useState<any>(null);
   const isEditing = !!invoice;
 
   const { closures, isLoading: loadingClosures } = useClosures();
@@ -135,7 +155,7 @@ export const InvoiceForm: React.FC<InvoiceFormProps> = ({
   const handleFormSubmit = async (data: InvoiceFormData) => {
     if (!selectedClosure) return;
 
-    await onSubmit({
+    const formattedData = {
       closureId: data.closureId,
       clientId: selectedClosure.client_id,
       issueDate: format(data.issueDate, 'yyyy-MM-dd'),
@@ -147,7 +167,22 @@ export const InvoiceForm: React.FC<InvoiceFormProps> = ({
       subtotal,
       vat,
       total,
-    });
+    };
+
+    if (isEditing) {
+      setPendingData(formattedData);
+      setShowConfirmDialog(true);
+    } else {
+      await onSubmit(formattedData);
+    }
+  };
+
+  const confirmUpdate = async () => {
+    if (pendingData) {
+      await onSubmit(pendingData);
+      setShowConfirmDialog(false);
+      setPendingData(null);
+    }
   };
 
   const validateStep = (step: number): boolean => {
@@ -533,6 +568,24 @@ export const InvoiceForm: React.FC<InvoiceFormProps> = ({
           </div>
         </Form>
       </CardContent>
+
+      <AlertDialog open={showConfirmDialog} onOpenChange={setShowConfirmDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>¿Guardar cambios?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Se actualizará la información de la factura y se registrará un evento en el historial de cambios.
+              Esta acción no se puede deshacer si cambia estados críticos.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setPendingData(null)}>Cancelar</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmUpdate} className="bg-violet-600 hover:bg-violet-700 text-white">
+              Confirmar Cambios
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </Card>
   );
 };

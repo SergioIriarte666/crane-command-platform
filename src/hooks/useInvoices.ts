@@ -2,7 +2,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
-import type { InvoiceInsert, InvoiceUpdate, InvoiceStatus } from '@/types/finance';
+import type { InvoiceInsert, InvoiceUpdate, InvoiceStatus, InvoiceHistory } from '@/types/finance';
 import type { Database } from '@/integrations/supabase/types';
 
 type InvoiceRow = Database['public']['Tables']['invoices']['Row'];
@@ -12,6 +12,30 @@ export type InvoiceWithRelations = InvoiceRow & {
   client: Pick<ClientRow, 'id' | 'name' | 'code' | 'tax_id'> | null;
   billing_closure: { id: string; folio: string } | null;
 };
+
+export function useInvoiceHistory(invoiceId: string | null) {
+  const { authUser } = useAuth();
+
+  return useQuery({
+    queryKey: ['invoice_history', invoiceId],
+    queryFn: async () => {
+      if (!invoiceId) return [];
+      
+      const { data, error } = await supabase
+        .from('invoice_history')
+        .select(`
+          *,
+          user:profiles(full_name, email)
+        `)
+        .eq('invoice_id', invoiceId)
+        .order('changed_at', { ascending: false });
+
+      if (error) throw error;
+      return data as InvoiceHistory[];
+    },
+    enabled: !!invoiceId && !!authUser?.tenant?.id,
+  });
+}
 
 export function useInvoices() {
   const { authUser } = useAuth();

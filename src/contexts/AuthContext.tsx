@@ -23,7 +23,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [authUser, setAuthUser] = useState<AuthUser | null>(null);
+  const authUserRef = React.useRef<AuthUser | null>(null);
   const [loading, setLoading] = useState(true);
+
+  // Keep ref in sync with state to avoid stale closures in listeners
+  useEffect(() => {
+    authUserRef.current = authUser;
+  }, [authUser]);
 
   const withTimeout = async <T,>(promise: Promise<T>, ms: number, label: string): Promise<T> => {
     let timeoutId: number | undefined;
@@ -97,14 +103,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       };
     } catch (error) {
       console.error('Error fetching user data:', error);
-      // Return minimal shape if possible
-      return {
-        id: userId,
-        email: '',
-        profile: null,
-        roles: [],
-        tenant: null,
-      };
+      // If fetching fails, return null so we can decide whether to keep stale data
+      return null;
     }
   };
 
@@ -139,13 +139,28 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             8000,
             `fetchUserData (${event})`,
           );
-          safe(() => setAuthUser(userData));
+          
+          if (userData) {
+            safe(() => setAuthUser(userData));
+          } else {
+            // Fetch returned null (handled error). Check if we can preserve stale data.
+            if (authUserRef.current?.id === nextSession.user.id) {
+              console.warn('[auth] Fetch failed, preserving existing user data for:', nextSession.user.email);
+            } else {
+              safe(() => setAuthUser(null));
+            }
+          }
         } else {
           safe(() => setAuthUser(null));
         }
       } catch (error) {
         console.error('[auth] Error in onAuthStateChange:', error);
-        safe(() => setAuthUser(null));
+        // On timeout/error, only clear if we don't have matching stale data
+        if (nextSession?.user && authUserRef.current?.id === nextSession.user.id) {
+          console.warn('[auth] Error/Timeout, preserving existing user data');
+        } else {
+          safe(() => setAuthUser(null));
+        }
       } finally {
         safe(() => setLoading(false));
       }
@@ -166,7 +181,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
         if (existingSession?.user) {
           const userData = await withTimeout(fetchUserData(existingSession.user.id), 8000, 'fetchUserData (getSession)');
-          safe(() => setAuthUser(userData));
+          if (userData) {
+            safe(() => setAuthUser(userData));
+          }
         }
       } catch (error) {
         // Don't clear state here: onAuthStateChange (INITIAL_SESSION) is the source of truth.
@@ -218,10 +235,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setLoading(true);
     try {
       const userData = await withTimeout(fetchUserData(user.id), 8000, 'refreshAuthUser');
-      setAuthUser(userData);
+      if (userData) {
+        setAuthUser(userData);
+      } else {
+        console.warn('[auth] refreshAuthUser returned null, keeping existing data');
+      }
     } catch (error) {
       console.error('[auth] refreshAuthUser failed:', error);
-      setAuthUser(null);
+      // Do not clear authUser on transient failure
     } finally {
       setLoading(false);
     }

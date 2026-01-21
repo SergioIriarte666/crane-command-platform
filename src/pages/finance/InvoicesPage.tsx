@@ -11,14 +11,16 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from 'sonner';
+import { useAuth } from '@/contexts/AuthContext';
 import { useInvoices, InvoiceWithRelations } from '@/hooks/useInvoices';
 import { useClosures } from '@/hooks/useClosures';
 import { INVOICE_STATUS_CONFIG, formatCurrency, getInvoiceNextStatuses } from '@/types/finance';
 import type { InvoiceStatus } from '@/types/finance';
 import { format, differenceInDays } from 'date-fns';
 import { es } from 'date-fns/locale';
-import { InvoiceForm, InvoiceCancellationModal } from '@/components/invoices';
+import { InvoiceForm, InvoiceCancellationModal, InvoiceDetailModal } from '@/components/invoices';
 import { exportInvoicesToExcel, exportInvoicesToPDF } from '@/lib/invoiceExport';
+import { mapTenantToCompanyInfo } from '@/lib/pdfUtils';
 
 const STATUS_ICONS: Record<InvoiceStatus, React.ElementType> = {
   draft: Pencil,
@@ -31,7 +33,8 @@ const STATUS_ICONS: Record<InvoiceStatus, React.ElementType> = {
 };
 
 export default function InvoicesPage() {
-  const { invoices, metrics, isLoading, createInvoice, deleteInvoice, updateStatus } = useInvoices();
+  const { isAdmin, authUser } = useAuth();
+  const { invoices, metrics, isLoading, createInvoice, deleteInvoice, updateStatus, updateInvoice } = useInvoices();
   const { updateClosure } = useClosures();
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
@@ -40,6 +43,8 @@ export default function InvoicesPage() {
   const [dateTo, setDateTo] = useState('');
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [showFormDialog, setShowFormDialog] = useState(false);
+  const [editingInvoice, setEditingInvoice] = useState<InvoiceWithRelations | null>(null);
+  const [viewInvoice, setViewInvoice] = useState<InvoiceWithRelations | null>(null);
   const [cancellingInvoice, setCancellingInvoice] = useState<InvoiceWithRelations | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -113,7 +118,7 @@ export default function InvoicesPage() {
     setSortConfig({ key, direction });
   };
 
-  const handleCreateInvoice = async (data: {
+  const handleSaveInvoice = async (data: {
     closureId: string;
     clientId: string;
     issueDate: string;
@@ -128,29 +133,49 @@ export default function InvoicesPage() {
   }) => {
     setIsSubmitting(true);
     try {
-      const invoice = await createInvoice.mutateAsync({
-        billing_closure_id: data.closureId,
-        client_id: data.clientId,
-        issue_date: data.issueDate,
-        due_date: data.dueDate,
-        status: data.status,
-        payment_terms_id: data.paymentTermsId || null,
-        fiscal_folio: data.numeroFiscal || null,
-        subtotal: data.subtotal,
-        vat: data.vat,
-        tax_amount: data.vat,
-        total: data.total,
-        balance_due: data.total,
-      });
+      if (editingInvoice) {
+        await updateInvoice.mutateAsync({
+          id: editingInvoice.id,
+          billing_closure_id: data.closureId,
+          client_id: data.clientId,
+          issue_date: data.issueDate,
+          due_date: data.dueDate,
+          status: data.status,
+          payment_terms_id: data.paymentTermsId || null,
+          fiscal_folio: data.numeroFiscal || null,
+          subtotal: data.subtotal,
+          vat: data.vat,
+          tax_amount: data.vat,
+          total: data.total,
+          balance_due: data.status === 'paid' ? 0 : data.total,
+          paid_at: data.paymentDate || null,
+        });
+      } else {
+        const invoice = await createInvoice.mutateAsync({
+          billing_closure_id: data.closureId,
+          client_id: data.clientId,
+          issue_date: data.issueDate,
+          due_date: data.dueDate,
+          status: data.status,
+          payment_terms_id: data.paymentTermsId || null,
+          fiscal_folio: data.numeroFiscal || null,
+          subtotal: data.subtotal,
+          vat: data.vat,
+          tax_amount: data.vat,
+          total: data.total,
+          balance_due: data.total,
+        });
 
-      // Update closure status to invoicing
-      await updateClosure.mutateAsync({
-        id: data.closureId,
-        invoice_id: invoice.id,
-        status: 'invoicing',
-      });
+        // Update closure status to invoicing
+        await updateClosure.mutateAsync({
+          id: data.closureId,
+          invoice_id: invoice.id,
+          status: 'invoicing',
+        });
+      }
 
       setShowFormDialog(false);
+      setEditingInvoice(null);
     } finally {
       setIsSubmitting(false);
     }
@@ -160,6 +185,7 @@ export default function InvoicesPage() {
     if (!cancellingInvoice) return;
     await updateStatus.mutateAsync({ id: cancellingInvoice.id, status: 'cancelled' });
     toast.success('Factura anulada', { description: `NC ${data.creditNoteNumber} registrada` });
+    setCancellingInvoice(null);
   };
 
   if (isLoading) {
@@ -173,15 +199,24 @@ export default function InvoicesPage() {
           <h1 className="text-2xl font-bold">Facturación</h1>
           <p className="text-muted-foreground">{invoices.length} facturas</p>
         </div>
-        <Button onClick={() => setShowFormDialog(true)}><Plus className="w-4 h-4 mr-2" />Nueva Factura</Button>
+        {isAdmin() && (
+          <Button onClick={() => setShowFormDialog(true)}><Plus className="w-4 h-4 mr-2" />Nueva Factura</Button>
+        )}
       </div>
 
-      {/* New Invoice Dialog with 3-step form */}
-      <Dialog open={showFormDialog} onOpenChange={setShowFormDialog}>
+      {/* New/Edit Invoice Dialog */}
+      <Dialog open={showFormDialog} onOpenChange={(open) => {
+        setShowFormDialog(open);
+        if (!open) setEditingInvoice(null);
+      }}>
         <DialogContent className="max-w-5xl max-h-[95vh] p-0 overflow-hidden">
           <InvoiceForm
-            onSubmit={handleCreateInvoice}
-            onCancel={() => setShowFormDialog(false)}
+            invoice={editingInvoice}
+            onSubmit={handleSaveInvoice}
+            onCancel={() => {
+              setShowFormDialog(false);
+              setEditingInvoice(null);
+            }}
             isLoading={isSubmitting}
           />
         </DialogContent>
@@ -194,6 +229,13 @@ export default function InvoicesPage() {
         isOpen={!!cancellingInvoice}
         onClose={() => setCancellingInvoice(null)}
         onConfirm={handleCancelInvoice}
+      />
+
+      {/* Detail Modal */}
+      <InvoiceDetailModal
+        invoice={viewInvoice}
+        isOpen={!!viewInvoice}
+        onClose={() => setViewInvoice(null)}
       />
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -261,7 +303,10 @@ export default function InvoicesPage() {
             <FileSpreadsheet className="w-4 h-4 mr-2" />
             Excel
           </Button>
-          <Button variant="outline" size="sm" onClick={() => exportInvoicesToPDF(sortedInvoices)}>
+          <Button variant="outline" size="sm" onClick={async () => {
+            const companyInfo = mapTenantToCompanyInfo(authUser?.tenant);
+            await exportInvoicesToPDF(sortedInvoices, companyInfo);
+          }}>
             <FileText className="w-4 h-4 mr-2" />
             PDF
           </Button>
@@ -340,34 +385,41 @@ export default function InvoicesPage() {
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild><Button variant="ghost" size="icon" className="h-8 w-8"><MoreVertical className="w-4 h-4" /></Button></DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
-                        <DropdownMenuItem onClick={() => toast.info('Vista detallada próximamente')}>
+                        <DropdownMenuItem onClick={() => setViewInvoice(inv)}>
                           <Eye className="w-4 h-4 mr-2" />Ver
                         </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => toast.info('Edición próximamente')}>
-                          <Pencil className="w-4 h-4 mr-2" />Editar
-                        </DropdownMenuItem>
-                        {nextStatuses.length > 0 && <DropdownMenuSeparator />}
-                        {nextStatuses.map((status) => {
-                          const StatusIcon = STATUS_ICONS[status];
-                          return (
-                            <DropdownMenuItem key={status} onClick={() => updateStatus.mutate({ id: inv.id, status })}>
-                              <StatusIcon className="w-4 h-4 mr-2" />
-                              {INVOICE_STATUS_CONFIG[status].label}
-                            </DropdownMenuItem>
-                          );
-                        })}
-                        {canCancel && (
+                        {isAdmin() && (
                           <>
+                            <DropdownMenuItem onClick={() => {
+                              setEditingInvoice(inv);
+                              setShowFormDialog(true);
+                            }}>
+                              <Pencil className="w-4 h-4 mr-2" />Editar
+                            </DropdownMenuItem>
+                            {nextStatuses.length > 0 && <DropdownMenuSeparator />}
+                            {nextStatuses.map((status) => {
+                              const StatusIcon = STATUS_ICONS[status];
+                              return (
+                                <DropdownMenuItem key={status} onClick={() => updateStatus.mutate({ id: inv.id, status })}>
+                                  <StatusIcon className="w-4 h-4 mr-2" />
+                                  {INVOICE_STATUS_CONFIG[status].label}
+                                </DropdownMenuItem>
+                              );
+                            })}
+                            {canCancel && (
+                              <>
+                                <DropdownMenuSeparator />
+                                <DropdownMenuItem className="text-destructive" onClick={() => setCancellingInvoice(inv)}>
+                                  <Ban className="w-4 h-4 mr-2" />Anular con NC
+                                </DropdownMenuItem>
+                              </>
+                            )}
                             <DropdownMenuSeparator />
-                            <DropdownMenuItem className="text-destructive" onClick={() => setCancellingInvoice(inv)}>
-                              <Ban className="w-4 h-4 mr-2" />Anular con NC
+                            <DropdownMenuItem className="text-destructive" onClick={() => setDeleteId(inv.id)}>
+                              <Trash2 className="w-4 h-4 mr-2" />Eliminar
                             </DropdownMenuItem>
                           </>
                         )}
-                        <DropdownMenuSeparator />
-                        <DropdownMenuItem className="text-destructive" onClick={() => setDeleteId(inv.id)}>
-                          <Trash2 className="w-4 h-4 mr-2" />Eliminar
-                        </DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
                   </TableCell>
@@ -409,7 +461,7 @@ export default function InvoicesPage() {
           <AlertDialogHeader><AlertDialogTitle>¿Eliminar factura?</AlertDialogTitle><AlertDialogDescription>Esta acción no se puede deshacer.</AlertDialogDescription></AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancelar</AlertDialogCancel>
-            <AlertDialogAction onClick={() => { deleteInvoice.mutate(deleteId!); setDeleteId(null); }} className="bg-destructive text-destructive-foreground">Eliminar</AlertDialogAction>
+            <AlertDialogAction onClick={() => deleteId && deleteInvoice.mutate(deleteId)}>Eliminar</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>

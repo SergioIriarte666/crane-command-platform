@@ -5,7 +5,7 @@ import * as XLSX from 'xlsx';
 import { INVOICE_STATUS_CONFIG } from '@/types/finance';
 import { InvoiceWithRelations } from '@/hooks/useInvoices';
 import { differenceInDays } from 'date-fns';
-import { addCompanyHeader, addPageNumbers, safeDateFormat, safeCurrencyFormat } from '@/lib/pdfUtils';
+import { addCompanyHeader, addPageNumbers, safeDateFormat, safeCurrencyFormat, CompanyInfo, FALLBACK_COMPANY_INFO } from '@/lib/pdfUtils';
 import { toast } from 'sonner';
 
 export function exportInvoicesToExcel(invoices: InvoiceWithRelations[]): boolean {
@@ -38,13 +38,13 @@ export function exportInvoicesToExcel(invoices: InvoiceWithRelations[]): boolean
   }
 }
 
-export function exportInvoicesToPDF(invoices: InvoiceWithRelations[]): boolean {
+export async function exportInvoicesToPDF(invoices: InvoiceWithRelations[], companyInfo: CompanyInfo = FALLBACK_COMPANY_INFO): Promise<boolean> {
   try {
     if (invoices.length === 0) return false;
 
     const doc = new jsPDF();
     
-    const startY = addCompanyHeader(doc, 'Reporte de Facturas');
+    const startY = await addCompanyHeader(doc, 'Reporte de Facturas', companyInfo);
 
     const headers = [[
       'Fecha Gen.',
@@ -79,7 +79,7 @@ export function exportInvoicesToPDF(invoices: InvoiceWithRelations[]): boolean {
       headStyles: { fillColor: [41, 128, 185] },
     });
 
-    addPageNumbers(doc);
+    addPageNumbers(doc, companyInfo);
 
     doc.save(`facturas_${format(new Date(), 'yyyy-MM-dd_HHmm')}.pdf`);
     return true;
