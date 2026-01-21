@@ -93,10 +93,6 @@ export function ReportDateFilter({
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
-            <DropdownMenuItem onClick={() => onExport('csv')}>
-              <FileText className="w-4 h-4 mr-2" />
-              Exportar CSV
-            </DropdownMenuItem>
             <DropdownMenuItem onClick={() => onExport('pdf')}>
               <FileText className="w-4 h-4 mr-2" />
               Exportar PDF

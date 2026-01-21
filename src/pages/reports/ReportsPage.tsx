@@ -1,13 +1,14 @@
 import { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { BarChart3, TrendingUp, Users, Truck, DollarSign, FileText } from 'lucide-react';
+import { BarChart3, TrendingUp, Users, Truck, DollarSign, FileText, Receipt } from 'lucide-react';
 import { ServicesReport } from '@/components/reports/ServicesReport';
 import { RevenueReport } from '@/components/reports/RevenueReport';
 import { ClientsReport } from '@/components/reports/ClientsReport';
 import { OperatorsReport } from '@/components/reports/OperatorsReport';
 import { FleetReport } from '@/components/reports/FleetReport';
 import { FinanceReport } from '@/components/reports/FinanceReport';
+import { CostsReport } from '@/components/reports/CostsReport';
 
 const reportTypes = [
   { id: 'services', label: 'Servicios', icon: BarChart3, description: 'Análisis de servicios por período, tipo y estado' },
@@ -16,6 +17,7 @@ const reportTypes = [
   { id: 'operators', label: 'Operadores', icon: Truck, description: 'Rendimiento y comisiones de operadores' },
   { id: 'fleet', label: 'Flota', icon: Truck, description: 'Utilización de unidades y mantenimiento' },
   { id: 'finance', label: 'Finanzas', icon: DollarSign, description: 'Cuentas por cobrar, pagos y comisiones' },
+  { id: 'costs', label: 'Costos', icon: Receipt, description: 'Análisis de costos operativos y de servicios' },
 ];
 
 export default function ReportsPage() {
@@ -29,7 +31,7 @@ export default function ReportsPage() {
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-        <TabsList className="grid grid-cols-3 lg:grid-cols-6 h-auto gap-2 bg-transparent p-0">
+        <TabsList className="grid grid-cols-3 lg:grid-cols-7 h-auto gap-2 bg-transparent p-0">
           {reportTypes.map((report) => (
             <TabsTrigger
               key={report.id}
@@ -64,6 +66,10 @@ export default function ReportsPage() {
 
         <TabsContent value="finance">
           <FinanceReport />
+        </TabsContent>
+
+        <TabsContent value="costs">
+          <CostsReport />
         </TabsContent>
       </Tabs>
     </div>

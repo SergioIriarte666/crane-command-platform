@@ -42,11 +42,13 @@ import {
   Search,
   Download,
   Check,
-  X
+  X,
+  FileText,
+  FileSpreadsheet
 } from 'lucide-react';
 import { CostWithRelations, CostCategory, COST_CATEGORY_CONFIG } from '@/types/costs';
 import { safeDateFormat, safeCurrencyFormat } from '@/lib/pdfUtils';
-import { exportCostsToCSV } from '@/lib/costExport';
+import { exportCostsToExcel, exportCostsToPDF } from '@/lib/costExport';
 import { toast } from 'sonner';
 
 interface CostsTableProps {
@@ -147,13 +149,6 @@ export function CostsTable({
     }));
   };
 
-  const handleExport = () => {
-    const success = exportCostsToCSV(sortedCosts);
-    if (success) {
-      toast.success('Costos exportados correctamente');
-    }
-  };
-
   const startEditing = (cost: CostWithRelations) => {
     setEditingId(cost.id);
     setEditDescription(cost.description);
@@ -247,10 +242,24 @@ export function CostsTable({
           </div>
         </div>
 
-        <Button onClick={handleExport} variant="outline" className="flex items-center gap-2">
-          <Download className="h-4 w-4" />
-          Exportar
-        </Button>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="outline" className="flex items-center gap-2">
+              <Download className="h-4 w-4" />
+              Exportar
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuItem onClick={() => exportCostsToExcel(sortedCosts)}>
+              <FileSpreadsheet className="h-4 w-4 mr-2" />
+              Exportar Excel
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={async () => await exportCostsToPDF(sortedCosts)}>
+              <FileText className="h-4 w-4 mr-2" />
+              Exportar PDF
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
 
       {/* Table */}

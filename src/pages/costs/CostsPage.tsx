@@ -65,7 +65,7 @@ import { QueryErrorState } from '@/components/common/QueryErrorState';
 import { CostDetailDialog } from '@/components/costs/CostDetailDialog';
 import { ServiceDetailsModal } from '@/components/services/ServiceDetailsModal';
 import { XMLCostUpload } from '@/components/costs/XMLCostUpload';
-import { exportCostsToCSV, exportServiceCostsToCSV, exportServiceCostsToExcel, exportServiceCostsToPDF } from '@/lib/costExport';
+import { exportCostsToExcel, exportCostsToPDF, exportServiceCostsToExcel, exportServiceCostsToPDF } from '@/lib/costExport';
 import { useCatalogs } from '@/hooks/useCatalogs';
 import { useCatalogSubcategories } from '@/hooks/useCatalogSubcategories';
 import { useAddServiceCost, useDeleteServiceCost, useUpdateServiceCost } from '@/hooks/useServiceCosts';
@@ -360,20 +360,20 @@ export default function CostsPage() {
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              <DropdownMenuItem onClick={() => exportCostsToCSV(costs)}>
+              <DropdownMenuItem onClick={() => exportCostsToExcel(costs)}>
+                <FileSpreadsheet className="w-4 h-4 mr-2" />
+                Costos Operativos (Excel)
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={async () => await exportCostsToPDF(costs)}>
                 <FileText className="w-4 h-4 mr-2" />
-                Costos Operativos (CSV)
+                Costos Operativos (PDF)
               </DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={() => exportServiceCostsToCSV(sortedServiceCosts, categoriesMap)}>
-                <FileText className="w-4 h-4 mr-2" />
-                Costos de Servicios (CSV)
-              </DropdownMenuItem>
               <DropdownMenuItem onClick={() => exportServiceCostsToExcel(sortedServiceCosts, categoriesMap)}>
                 <FileSpreadsheet className="w-4 h-4 mr-2" />
                 Costos de Servicios (Excel)
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => exportServiceCostsToPDF(sortedServiceCosts, categoriesMap)}>
+              <DropdownMenuItem onClick={async () => await exportServiceCostsToPDF(sortedServiceCosts, categoriesMap)}>
                 <FileText className="w-4 h-4 mr-2" />
                 Costos de Servicios (PDF)
               </DropdownMenuItem>

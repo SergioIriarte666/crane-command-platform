@@ -7,124 +7,91 @@ import { ServiceCostLedgerRow } from '@/hooks/useServiceCostsLedger';
 import { addCompanyHeader, addPageNumbers, safeDateFormat, safeCurrencyFormat } from '@/lib/pdfUtils';
 import { toast } from 'sonner';
 
-export function exportCostsToCSV(costs: CostWithRelations[]): boolean {
+export function exportCostsToExcel(costs: CostWithRelations[]): boolean {
   try {
     if (costs.length === 0) {
       return false;
     }
 
-    const headers = [
-      'Código',
-      'Descripción',
-      'Categoría',
-      'Cantidad',
-      'Valor Unitario',
-      'Subtotal',
-      'Descuento',
-      'Tasa IVA',
-      'IVA',
-      'Total',
-      'Estado',
-      'Fecha Costo',
-      'Servicio',
-      'Grúa',
-      'Operador',
-      'Proveedor',
-      'Notas',
-      'Fecha Creación',
-    ];
+    const data = costs.map((cost) => ({
+      'Código': cost.code,
+      'Descripción': cost.description,
+      'Categoría': COST_CATEGORY_CONFIG[cost.category]?.label || cost.category,
+      'Cantidad': cost.quantity,
+      'Valor Unitario': Number(cost.unit_value),
+      'Subtotal': Number(cost.subtotal),
+      'Descuento': Number(cost.discount),
+      'Tasa IVA': `${cost.tax_rate}%`,
+      'IVA': Number(cost.tax_amount),
+      'Total': Number(cost.total),
+      'Estado': COST_STATUS_CONFIG[cost.status]?.label || cost.status,
+      'Fecha Costo': safeDateFormat(cost.cost_date, 'yyyy-MM-dd'),
+      'Servicio': cost.service?.folio || '',
+      'Grúa': cost.crane?.unit_number || '',
+      'Operador': cost.operator?.full_name || '',
+      'Proveedor': cost.supplier?.name || '',
+      'Notas': cost.notes || '',
+      'Fecha Creación': safeDateFormat(cost.created_at, 'yyyy-MM-dd HH:mm'),
+    }));
 
-    const rows = costs.map((cost) => [
-      cost.code,
-      `"${cost.description.replace(/"/g, '""')}"`,
-      COST_CATEGORY_CONFIG[cost.category].label,
-      cost.quantity,
-      cost.unit_value,
-      cost.subtotal,
-      cost.discount,
-      `${cost.tax_rate}%`,
-      cost.tax_amount,
-      cost.total,
-      COST_STATUS_CONFIG[cost.status].label,
-      safeDateFormat(cost.cost_date, 'yyyy-MM-dd'),
-      cost.service?.folio || '',
-      cost.crane?.unit_number || '',
-      cost.operator?.full_name || '',
-      cost.supplier?.name || '',
-      cost.notes ? `"${cost.notes.replace(/"/g, '""')}"` : '',
-      safeDateFormat(cost.created_at, 'yyyy-MM-dd HH:mm'),
-    ]);
-
-    const csvContent = [
-      headers.join(','),
-      ...rows.map((row) => row.join(',')),
-    ].join('\n');
-
-    const blob = new Blob(['\uFEFF' + csvContent], { type: 'text/csv;charset=utf-8;' });
-    const link = document.createElement('a');
-    const url = URL.createObjectURL(blob);
-    
-    link.setAttribute('href', url);
-    link.setAttribute('download', `costos_${format(new Date(), 'yyyy-MM-dd_HHmm')}.csv`);
-    link.style.visibility = 'hidden';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+    const ws = XLSX.utils.json_to_sheet(data);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Costos Operativos");
+    XLSX.writeFile(wb, `costos_operativos_${format(new Date(), 'yyyy-MM-dd_HHmm')}.xlsx`);
     return true;
   } catch (error) {
-    console.error('Error exporting costs to CSV:', error);
-    toast.error('Error al exportar a CSV');
+    console.error('Error exporting costs to Excel:', error);
+    toast.error('Error al exportar a Excel');
     return false;
   }
 }
 
-export function exportServiceCostsToCSV(costs: ServiceCostLedgerRow[], categoriesMap: Record<string, string>): boolean {
+export async function exportCostsToPDF(costs: CostWithRelations[]): Promise<boolean> {
   try {
     if (costs.length === 0) {
       return false;
     }
 
-    const headers = [
+    const doc = new jsPDF('l'); // Landscape for more columns
+
+    const tableColumn = [
       'Fecha',
+      'Código',
       'Descripción',
       'Categoría',
-      'Subcategoría',
-      'Monto',
-      'Servicio Asociado',
-      'Cliente',
-      'Notas'
+      'Total',
+      'Estado',
+      'Servicio/Grúa'
     ];
 
-    const rows = costs.map((cost) => [
+    const tableRows = costs.map((cost) => [
       safeDateFormat(cost.cost_date, 'yyyy-MM-dd'),
-      `"${cost.description.replace(/"/g, '""')}"`,
-      cost.category_id ? (categoriesMap[cost.category_id] || '—') : '—',
-      cost.subcategory || '—',
-      cost.amount,
-      cost.service ? `Servicio ${cost.service.folio}` : '—',
-      cost.service?.client?.name || '—',
-      cost.notes ? `"${cost.notes.replace(/"/g, '""')}"` : '',
+      cost.code,
+      cost.description,
+      COST_CATEGORY_CONFIG[cost.category]?.label || cost.category,
+      safeCurrencyFormat(cost.total),
+      COST_STATUS_CONFIG[cost.status]?.label || cost.status,
+      [cost.service?.folio, cost.crane?.unit_number].filter(Boolean).join(' / ') || '-'
     ]);
 
-    const csvContent = [
-      headers.join(','),
-      ...rows.map((row) => row.join(',')),
-    ].join('\n');
+    const startY = await addCompanyHeader(doc, 'Reporte de Costos Operativos');
 
-    const blob = new Blob(['\uFEFF' + csvContent], { type: 'text/csv;charset=utf-8;' });
-    const link = document.createElement('a');
-    const url = URL.createObjectURL(blob);
-    
-    link.setAttribute('href', url);
-    link.setAttribute('download', `costos_servicios_${format(new Date(), 'yyyy-MM-dd_HHmm')}.csv`);
-    link.style.visibility = 'hidden';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+    autoTable(doc, {
+      head: [tableColumn],
+      body: tableRows,
+      startY: startY,
+      styles: { fontSize: 8 },
+      headStyles: { fillColor: [41, 128, 185] },
+      margin: { top: 20 },
+    });
+
+    addPageNumbers(doc);
+
+    doc.save(`costos_operativos_${format(new Date(), 'yyyy-MM-dd_HHmm')}.pdf`);
     return true;
   } catch (error) {
-    console.error('Error exporting service costs to CSV:', error);
-    toast.error('Error al exportar a CSV');
+    console.error('Error exporting costs to PDF:', error);
+    toast.error('Error al generar el PDF');
     return false;
   }
 }
@@ -158,7 +125,7 @@ export function exportServiceCostsToExcel(costs: ServiceCostLedgerRow[], categor
   }
 }
 
-export function exportServiceCostsToPDF(costs: ServiceCostLedgerRow[], categoriesMap: Record<string, string>): boolean {
+export async function exportServiceCostsToPDF(costs: ServiceCostLedgerRow[], categoriesMap: Record<string, string>): Promise<boolean> {
   try {
     if (costs.length === 0) {
       return false;
@@ -184,7 +151,7 @@ export function exportServiceCostsToPDF(costs: ServiceCostLedgerRow[], categorie
       cost.service ? `${cost.service.folio}` : '—',
     ]);
 
-    const startY = addCompanyHeader(doc, 'Reporte de Costos de Servicios');
+    const startY = await addCompanyHeader(doc, 'Reporte de Costos de Servicios');
 
     autoTable(doc, {
       head: [tableColumn],

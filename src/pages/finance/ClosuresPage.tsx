@@ -14,13 +14,15 @@ import { CLOSURE_STATUS_CONFIG, formatCurrency, getClosureNextStatuses } from '@
 import type { ClosureStatus } from '@/types/finance';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
-import { ClosureForm } from '@/components/closures';
+import { ClosureForm, ClosureDetailDialog } from '@/components/closures';
+import { BillingClosure } from '@/types/finance';
 
 export default function ClosuresPage() {
   const { closures, metrics, isLoading, error, deleteClosure, updateStatus } = useClosures();
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [viewClosure, setViewClosure] = useState<BillingClosure | null>(null);
   const [showNewDialog, setShowNewDialog] = useState(false);
 
   const filteredClosures = closures.filter((c) => {
@@ -60,6 +62,12 @@ export default function ClosuresPage() {
       </div>
 
       <ClosureForm open={showNewDialog} onOpenChange={setShowNewDialog} />
+
+      <ClosureDetailDialog 
+        closure={viewClosure} 
+        open={!!viewClosure} 
+        onOpenChange={(open) => !open && setViewClosure(null)} 
+      />
 
       {/* Status metric cards - only show if we have statuses */}
       {metrics.byStatus.length > 0 && (
@@ -148,6 +156,10 @@ export default function ClosuresPage() {
                             </DropdownMenuItem>
                           ))}
                           <DropdownMenuSeparator />
+                          <DropdownMenuItem onClick={() => setViewClosure(closure)}>
+                            <Search className="w-4 h-4 mr-2" />
+                            Ver detalles
+                          </DropdownMenuItem>
                           <DropdownMenuItem className="text-destructive" onClick={() => setDeleteId(closure.id)}><Trash2 className="w-4 h-4 mr-2" />Eliminar</DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>
