@@ -6,7 +6,8 @@ import type { VipService, BatchProgressCallback } from '@/types/vipPipeline';
 
 export function useClientServices(clientId: string | null) {
   const { authUser } = useAuth();
-  const tenantId = authUser?.tenant?.id;
+  // Robust fallback: use profile.tenant_id if tenant?.id is not available
+  const tenantId = authUser?.tenant?.id || authUser?.profile?.tenant_id;
 
   const query = useQuery({
     queryKey: ['client-services', clientId, tenantId],
