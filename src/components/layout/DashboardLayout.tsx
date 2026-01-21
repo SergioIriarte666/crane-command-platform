@@ -13,7 +13,7 @@ import { TrialBanner } from '@/components/layout/TrialBanner';
 import { useTrialNotifications } from '@/hooks/useTrialNotifications';
 
 export default function DashboardLayout() {
-  const { user, loading, authUser, isSuperAdmin, signOut } = useAuth();
+  const { user, loading, authUser, isSuperAdmin, signOut, refreshAuthUser } = useAuth();
   const [sidebarOpen, setSidebarOpen] = useState(true);
   
   // Apply tenant's primary color to theme
@@ -41,7 +41,9 @@ export default function DashboardLayout() {
   }
 
   // Check if user has a tenant assigned (or is super_admin)
-  const hasTenant = authUser?.tenant != null;
+  // Use profile.tenant_id as source of truth (it's always set), 
+  // authUser.tenant is optional enrichment that may fail
+  const hasTenant = Boolean(authUser?.profile?.tenant_id) || Boolean(authUser?.tenant?.id);
   const isSuper = isSuperAdmin();
 
   // If user has no tenant and is not super_admin, show pending access screen
@@ -73,10 +75,17 @@ export default function DashboardLayout() {
               </div>
             </div>
 
-            <div className="flex flex-col gap-2">
+            <div className="flex flex-col gap-3">
               <p className="text-sm text-muted-foreground text-center">
-                Conectado como: <strong>{authUser?.profile?.email}</strong>
+                Conectado como: <strong>{authUser?.profile?.email || user?.email}</strong>
               </p>
+              <Button 
+                variant="default"
+                onClick={() => refreshAuthUser()}
+                className="w-full"
+              >
+                Reintentar
+              </Button>
               <Button 
                 variant="outline" 
                 onClick={() => signOut()}

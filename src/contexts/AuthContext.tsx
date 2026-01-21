@@ -65,6 +65,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
 
       // Tenant object is optional; some hooks can rely on profile.tenant_id directly.
+      // Even if this fails, user can proceed as long as profile.tenant_id exists.
       if (profile?.tenant_id) {
         try {
           const { data: tenantData, error: tenantError } = await supabase
@@ -72,9 +73,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             .select('*')
             .eq('id', profile.tenant_id)
             .maybeSingle();
-          if (!tenantError && tenantData) tenant = tenantData as Tenant;
+          
+          if (tenantError) {
+            console.warn('[auth] tenant fetch failed (non-blocking):', {
+              tenantId: profile.tenant_id,
+              code: tenantError.code,
+              message: tenantError.message,
+            });
+          } else if (tenantData) {
+            tenant = tenantData as Tenant;
+          }
         } catch (e) {
-          console.warn('[auth] tenant fetch failed:', e);
+          console.warn('[auth] tenant fetch exception (non-blocking):', e);
         }
       }
 
