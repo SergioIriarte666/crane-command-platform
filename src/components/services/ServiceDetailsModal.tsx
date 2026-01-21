@@ -39,6 +39,9 @@ import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { isCustodyService, getCustodyInfo } from '@/utils/serviceValueCalculations';
 import { toast } from 'sonner';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
+import { addCompanyHeader, addPageNumbers, safeDateFormat, safeCurrencyFormat } from '@/lib/pdfUtils';
 
 import { Loader2 } from 'lucide-react';
 
@@ -106,8 +109,127 @@ export function ServiceDetailsModal({
   const service = initialService || details?.service;
 
   const handleDownloadPDF = () => {
-    // TODO: Implement PDF generation
-    toast.info('Función de PDF en desarrollo');
+    try {
+      const doc = new jsPDF();
+      
+      // Header
+      let yPos = addCompanyHeader(doc, `Orden de Servicio: ${service.folio}`);
+      
+      // 1. Client Information
+      if (client) {
+        autoTable(doc, {
+          startY: yPos,
+          head: [['Información del Cliente', '']],
+          body: [
+            ['Nombre / Razón Social', client.trade_name || client.name || '—'],
+            ['RUT', client.tax_id || '—'],
+            ['Teléfono', client.phone || '—'],
+            ['Email', client.email || '—'],
+            ['Dirección', client.address || '—'],
+          ],
+          theme: 'grid',
+          headStyles: { fillColor: [41, 128, 185], textColor: 255, fontStyle: 'bold' },
+          columnStyles: { 0: { fontStyle: 'bold', cellWidth: 60 } },
+          styles: { fontSize: 9, cellPadding: 2 },
+        });
+        yPos = (doc as any).lastAutoTable.finalY + 10;
+      }
+
+      // 2. Service Details & Vehicle
+      const vehicleInfo = [
+        ['Vehículo', `${vehicleBrand || ''} ${vehicleModel || ''}`.trim() || '—'],
+        ['Placas', service.vehicle_plates || '—'],
+        ['Año', service.vehicle_year || '—'],
+        ['Color', service.vehicle_color || '—'],
+      ];
+
+      const serviceInfo = [
+        ['Tipo de Servicio', typeConfig.label],
+        ['Estado', statusConfig?.label || service.status],
+        ['Orden de Compra', service.po_number || '—'],
+        ['Cotización', service.quote_number || '—'],
+      ];
+
+      autoTable(doc, {
+        startY: yPos,
+        head: [['Detalles del Servicio y Vehículo', '']],
+        body: [
+          ...serviceInfo,
+          ...vehicleInfo
+        ],
+        theme: 'grid',
+        headStyles: { fillColor: [52, 73, 94], textColor: 255, fontStyle: 'bold' }, // Darker blue/grey
+        columnStyles: { 0: { fontStyle: 'bold', cellWidth: 60 } },
+        styles: { fontSize: 9, cellPadding: 2 },
+      });
+      yPos = (doc as any).lastAutoTable.finalY + 10;
+
+      // 3. Locations
+      autoTable(doc, {
+        startY: yPos,
+        head: [['Origen', 'Destino']],
+        body: [
+          [
+            `${service.origin_address || '—'}\n${[service.origin_city, service.origin_state].filter(Boolean).join(', ')}`,
+            `${service.destination_address || '—'}\n${[service.destination_city, service.destination_state].filter(Boolean).join(', ')}`
+          ]
+        ],
+        theme: 'grid',
+        headStyles: { fillColor: [52, 73, 94], textColor: 255, fontStyle: 'bold' },
+        styles: { fontSize: 9, cellPadding: 3 },
+      });
+      yPos = (doc as any).lastAutoTable.finalY + 10;
+
+      // 4. Dates
+      const datesBody = [
+        ['Solicitud', safeDateFormat(service.request_date)],
+        ['Programada', `${safeDateFormat(service.scheduled_date)} ${service.scheduled_time ? String(service.scheduled_time).substring(0, 5) : ''}`],
+        ['Realización', safeDateFormat(service.service_date)],
+      ];
+      
+      if (service.dispatch_time || service.arrival_time || service.completion_time) {
+         datesBody.push(
+            ['Despacho', safeDateFormat(service.dispatch_time, 'dd/MM/yyyy HH:mm')],
+            ['Llegada', safeDateFormat(service.arrival_time, 'dd/MM/yyyy HH:mm')],
+            ['Término', safeDateFormat(service.completion_time, 'dd/MM/yyyy HH:mm')]
+         );
+      }
+
+      autoTable(doc, {
+        startY: yPos,
+        head: [['Cronología del Servicio', 'Fecha / Hora']],
+        body: datesBody,
+        theme: 'grid',
+        headStyles: { fillColor: [52, 73, 94], textColor: 255, fontStyle: 'bold' },
+        columnStyles: { 0: { fontStyle: 'bold', cellWidth: 60 } },
+        styles: { fontSize: 9, cellPadding: 2 },
+      });
+      yPos = (doc as any).lastAutoTable.finalY + 10;
+
+      // 5. Financials
+      autoTable(doc, {
+        startY: yPos,
+        head: [['Concepto', 'Monto']],
+        body: [
+          ['Subtotal', safeCurrencyFormat(service.subtotal)],
+          ['IVA', safeCurrencyFormat(service.tax_amount)],
+          ['Total', safeCurrencyFormat(service.total)],
+        ],
+        theme: 'striped',
+        headStyles: { fillColor: [41, 128, 185], textColor: 255, fontStyle: 'bold' },
+        columnStyles: { 0: { fontStyle: 'bold' }, 1: { halign: 'right' } },
+        styles: { fontSize: 10, cellPadding: 2 },
+      });
+
+      // Footer
+      addPageNumbers(doc);
+
+      doc.save(`Servicio_${service.folio}.pdf`);
+      toast.success('PDF descargado correctamente');
+    } catch (error) {
+      console.error('Error generating PDF:', error);
+      toast.error('Error al generar el PDF');
+    }
   };
 
   const handleDuplicate = () => {
