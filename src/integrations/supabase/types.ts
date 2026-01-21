@@ -2253,29 +2253,29 @@ export type Database = {
         Row: {
           changed_by: string | null
           created_at: string | null
-          from_status: Database["public"]["Enums"]["service_status"] | null
+          from_status: string | null
           id: string
           notes: string | null
           service_id: string
-          to_status: Database["public"]["Enums"]["service_status"]
+          to_status: string
         }
         Insert: {
           changed_by?: string | null
           created_at?: string | null
-          from_status?: Database["public"]["Enums"]["service_status"] | null
+          from_status?: string | null
           id?: string
           notes?: string | null
           service_id: string
-          to_status: Database["public"]["Enums"]["service_status"]
+          to_status: string
         }
         Update: {
           changed_by?: string | null
           created_at?: string | null
-          from_status?: Database["public"]["Enums"]["service_status"] | null
+          from_status?: string | null
           id?: string
           notes?: string | null
           service_id?: string
-          to_status?: Database["public"]["Enums"]["service_status"]
+          to_status?: string
         }
         Relationships: [
           {
