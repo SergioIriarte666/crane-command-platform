@@ -37,7 +37,7 @@ import { mapTenantToCompanyInfo } from '@/lib/pdfUtils';
 import { InvoiceWithRelations, useInvoiceHistory } from '@/hooks/useInvoices';
 import { useClosureServices } from '@/hooks/useClosures';
 import { INVOICE_STATUS_CONFIG, formatCurrency } from '@/types/finance';
-import { exportInvoicesToPDF } from '@/lib/invoiceExport';
+import { exportInvoicesToPDF, exportInvoiceDetailToPDF } from '@/lib/invoiceExport';
 
 interface InvoiceDetailModalProps {
   invoice: InvoiceWithRelations | null;
@@ -74,7 +74,7 @@ export function InvoiceDetailModal({ invoice, isOpen, onClose }: InvoiceDetailMo
               </Badge>
               <Button variant="outline" size="sm" onClick={async () => {
                 const companyInfo = mapTenantToCompanyInfo(authUser?.tenant);
-                await exportInvoicesToPDF([invoice], companyInfo);
+                await exportInvoiceDetailToPDF(invoice, services || [], companyInfo);
               }}>
                 <Download className="h-4 w-4 mr-2" />
                 PDF

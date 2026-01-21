@@ -182,6 +182,84 @@ export async function addCompanyHeader(doc: jsPDF, title: string, companyInfo: C
 }
 
 /**
+ * Adds a header specifically for Invoices (Logo & Company Info on LEFT)
+ * Leaving the right side free for the Invoice Details Box
+ */
+export async function addInvoiceHeader(doc: jsPDF, companyInfo: CompanyInfo = FALLBACK_COMPANY_INFO) {
+  const pageWidth = doc.internal.pageSize.getWidth();
+  
+  // Parse primary color
+  let primaryColor = [41, 128, 185] as [number, number, number];
+  if (companyInfo.primary_color && /^#[0-9A-F]{6}$/i.test(companyInfo.primary_color)) {
+    const hex = companyInfo.primary_color;
+    const r = parseInt(hex.substring(1, 3), 16);
+    const g = parseInt(hex.substring(3, 5), 16);
+    const b = parseInt(hex.substring(5, 7), 16);
+    primaryColor = [r, g, b];
+  }
+
+  const secondaryColor = [52, 73, 94] as [number, number, number];
+
+  // 1. Draw Logo (Top Left)
+  const logoY = 15;
+  const logoX = 14;
+  
+  if (companyInfo.logo_url) {
+    try {
+      const img = await loadImage(companyInfo.logo_url);
+      const maxW = 25;
+      const maxH = 25;
+      let w = img.width;
+      let h = img.height;
+      const ratio = Math.min(maxW / w, maxH / h);
+      w = w * ratio;
+      h = h * ratio;
+      doc.addImage(img, 'PNG', logoX, logoY, w, h);
+    } catch (error) {
+      drawFallbackLogo(doc, primaryColor);
+    }
+  } else {
+    drawFallbackLogo(doc, primaryColor);
+  }
+
+  // 2. Company Info (Left aligned, below logo or next to it?)
+  // Let's put it below the logo area to be safe and clean
+  let textY = logoY + 30; 
+
+  doc.setFontSize(12);
+  doc.setTextColor(secondaryColor[0], secondaryColor[1], secondaryColor[2]);
+  doc.setFont('helvetica', 'bold');
+  doc.text(companyInfo.name, logoX, textY);
+  textY += 5;
+
+  doc.setFontSize(9);
+  doc.setFont('helvetica', 'normal');
+  doc.setTextColor(100, 100, 100);
+  
+  if (companyInfo.address) {
+    doc.text(companyInfo.address, logoX, textY);
+    textY += 4;
+  }
+  
+  if (companyInfo.tax_id) {
+    doc.text(`RUT: ${companyInfo.tax_id}`, logoX, textY);
+    textY += 4;
+  }
+  
+  const contactParts = [];
+  if (companyInfo.phone) contactParts.push(companyInfo.phone);
+  if (companyInfo.email) contactParts.push(companyInfo.email);
+  
+  if (contactParts.length > 0) {
+    doc.text(contactParts.join(' | '), logoX, textY);
+    textY += 4;
+  }
+
+  // Return the Y position where content should start (max of this or the box on the right)
+  return textY + 10;
+}
+
+/**
  * Adds footer with page numbers
  * @param doc jsPDF instance
  * @param companyInfo Optional company configuration
