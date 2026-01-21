@@ -107,16 +107,16 @@ export function SmartPaymentDialog({ open, onOpenChange }: SmartPaymentDialogPro
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[500px] p-0 overflow-hidden">
+      <DialogContent className="sm:max-w-[600px] max-h-[85vh] p-0 flex flex-col gap-0">
         {/* Header violeta */}
-        <DialogHeader className="bg-violet-600 text-white px-6 py-4">
+        <DialogHeader className="bg-violet-600 text-white px-6 py-4 shrink-0">
           <DialogTitle className="flex items-center gap-2 text-lg font-semibold">
             <Zap className="h-5 w-5" />
             Registrar Pago Inteligente
           </DialogTitle>
         </DialogHeader>
 
-        <div className="p-6 space-y-5">
+        <div className="p-6 space-y-5 overflow-y-auto">
           {/* Cliente */}
           <div className="space-y-2">
             <Label htmlFor="client" className="text-sm font-medium">

@@ -79,6 +79,12 @@ export default function DashboardLayout() {
               <p className="text-sm text-muted-foreground text-center">
                 Conectado como: <strong>{authUser?.profile?.email || user?.email}</strong>
               </p>
+              
+              <div className="text-xs text-muted-foreground bg-muted p-2 rounded overflow-hidden">
+                <p>ID: {user?.id}</p>
+                <p>Roles: {authUser?.roles?.length ? authUser.roles.join(', ') : 'Ninguno'}</p>
+              </div>
+
               <Button 
                 variant="default"
                 onClick={() => refreshAuthUser()}

@@ -105,6 +105,8 @@ export function useInvoices() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['invoices'] });
+      queryClient.invalidateQueries({ queryKey: ['closures'] });
+      queryClient.invalidateQueries({ queryKey: ['services'] });
       toast.success('Factura actualizada');
     },
     onError: (error) => {
@@ -132,6 +134,8 @@ export function useInvoices() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['invoices'] });
+      queryClient.invalidateQueries({ queryKey: ['closures'] });
+      queryClient.invalidateQueries({ queryKey: ['services'] });
       toast.success('Estado actualizado');
     },
     onError: (error) => {
