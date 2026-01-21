@@ -331,8 +331,13 @@ export default function OperatorDetailPage() {
 
         <TabsContent value="documentos" className="space-y-6">
           <Card>
-            <CardHeader>
+            <CardHeader className="flex flex-row items-center justify-between">
               <CardTitle className="text-lg">Documentación</CardTitle>
+              <Button asChild variant="outline" size="sm">
+                <Link to={`/operadores/${operator.id}/documentos`}>
+                  Gestionar Documentos
+                </Link>
+              </Button>
             </CardHeader>
             <CardContent className="space-y-4">
               <DocumentIndicator label="Licencia de Conducir" days={licenseDays} />

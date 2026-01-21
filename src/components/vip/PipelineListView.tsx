@@ -19,6 +19,7 @@ import { FloatingActionBar } from './FloatingActionBar';
 import { useAdvancedFilters } from '@/hooks/useAdvancedFilters';
 import { useUpdateServiceStatus } from '@/hooks/useClientServices';
 import type { VipService, ServiceGroup, BatchUpdateData } from '@/types/vipPipeline';
+import { ServiceDetailsModal } from '@/components/services/ServiceDetailsModal';
 import { toast } from 'sonner';
 
 interface PipelineListViewProps {
@@ -47,6 +48,8 @@ export function PipelineListView({ services, loading, clientId, clientName, onBa
   const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set(VIP_PIPELINE_STATUSES.map(s => s.id)));
   const [batchModalOpen, setBatchModalOpen] = useState(false);
   const [batchModalGroupServices, setBatchModalGroupServices] = useState<VipService[] | null>(null);
+  const [detailsModalOpen, setDetailsModalOpen] = useState(false);
+  const [selectedServiceId, setSelectedServiceId] = useState<string | null>(null);
   
   const { isOpen, setIsOpen, filters, activeFilterCount, applyAdvancedFilters, clearFilters, updateFilters } = useAdvancedFilters();
   const updateStatus = useUpdateServiceStatus();
@@ -170,6 +173,11 @@ export function PipelineListView({ services, loading, clientId, clientName, onBa
     if (!open) {
       setBatchModalGroupServices(null);
     }
+  };
+
+  const handleOpenDetails = (serviceId: string) => {
+    setSelectedServiceId(serviceId);
+    setDetailsModalOpen(true);
   };
 
   return (
@@ -311,10 +319,13 @@ export function PipelineListView({ services, loading, clientId, clientName, onBa
                             </TableCell>
                             <TableCell className="text-right font-medium text-sm">{formatCLP(service.total || 0)}</TableCell>
                             <TableCell>
-                              <Button variant="ghost" size="icon" asChild className="h-7 w-7 opacity-0 group-hover:opacity-100 transition-opacity">
-                                <Link to={`/servicios/${service.id}`}>
-                                  <Eye className="w-4 h-4" />
-                                </Link>
+                              <Button 
+                                variant="ghost" 
+                                size="icon" 
+                                className="h-7 w-7 opacity-0 group-hover:opacity-100 transition-opacity"
+                                onClick={() => handleOpenDetails(service.id)}
+                              >
+                                <Eye className="w-4 h-4" />
                               </Button>
                             </TableCell>
                           </TableRow>
@@ -352,6 +363,13 @@ export function PipelineListView({ services, loading, clientId, clientName, onBa
         selectedServices={selectedServicesList}
         onBatchUpdate={onBatchUpdate}
         clientName={clientName}
+      />
+
+      {/* Service Details Modal */}
+      <ServiceDetailsModal
+        isOpen={detailsModalOpen}
+        onOpenChange={setDetailsModalOpen}
+        serviceId={selectedServiceId}
       />
     </div>
   );

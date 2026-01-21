@@ -30,11 +30,14 @@ import ClientDetailPage from "@/pages/clients/ClientDetailPage";
 import CranesPage from "@/pages/fleet/CranesPage";
 import CraneFormPage from "@/pages/fleet/CraneFormPage";
 import CraneDetailPage from "@/pages/fleet/CraneDetailPage";
+import CraneMaintenancePage from "@/pages/fleet/CraneMaintenancePage";
+import CraneDocumentsPage from "@/pages/fleet/CraneDocumentsPage";
 
 // Operators
 import OperatorsPage from "@/pages/operators/OperatorsPage";
 import OperatorFormPage from "@/pages/operators/OperatorFormPage";
 import OperatorDetailPage from "@/pages/operators/OperatorDetailPage";
+import OperatorDocumentsPage from "@/pages/operators/OperatorDocumentsPage";
 
 // Suppliers
 import SuppliersPage from "@/pages/suppliers/SuppliersPage";
@@ -107,12 +110,15 @@ const App = () => (
               <Route path="/flota/gruas/nuevo" element={<CraneFormPage />} />
               <Route path="/flota/gruas/:id" element={<CraneDetailPage />} />
               <Route path="/flota/gruas/:id/editar" element={<CraneFormPage />} />
+              <Route path="/flota/gruas/:id/mantenimiento" element={<CraneMaintenancePage />} />
+              <Route path="/flota/gruas/:id/documentos" element={<CraneDocumentsPage />} />
               
               {/* Operators */}
               <Route path="/operadores" element={<OperatorsPage />} />
               <Route path="/operadores/nuevo" element={<OperatorFormPage />} />
               <Route path="/operadores/:id" element={<OperatorDetailPage />} />
               <Route path="/operadores/:id/editar" element={<OperatorFormPage />} />
+              <Route path="/operadores/:id/documentos" element={<OperatorDocumentsPage />} />
               
               {/* Suppliers */}
               <Route path="/proveedores" element={<SuppliersPage />} />
