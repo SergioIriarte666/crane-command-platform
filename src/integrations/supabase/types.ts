@@ -3005,6 +3005,7 @@ export type Database = {
         Returns: boolean
       }
       is_super_admin: { Args: { _user_id: string }; Returns: boolean }
+      peek_next_service_folio: { Args: { _tenant_id: string }; Returns: string }
       seed_status_catalogs_for_tenant: {
         Args: { _tenant_id: string }
         Returns: undefined

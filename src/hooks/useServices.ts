@@ -9,12 +9,14 @@ export function useNextFolio() {
   const tenantId = authUser?.tenant?.id || authUser?.profile?.tenant_id;
   
   return useQuery({
-    queryKey: ['next-service-folio', tenantId],
+    queryKey: ['next-service-folio-preview', tenantId],
     queryFn: async () => {
       if (!tenantId) throw new Error('No tenant');
       
+      // Use peek_ (read-only) instead of generate_ (which increments)
+      // The actual generate_service_folio is only called when creating a service
       const { data, error } = await supabase
-        .rpc('generate_service_folio', { _tenant_id: tenantId });
+        .rpc('peek_next_service_folio', { _tenant_id: tenantId });
       
       if (error) throw error;
       return data as string;
