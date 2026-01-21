@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { QueryErrorState } from '@/components/common/QueryErrorState';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+
 import { Checkbox } from '@/components/ui/checkbox';
 import {
   Table,
@@ -46,7 +46,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useServices } from '@/hooks/useServices';
-import { ServicePipeline } from '@/components/services/ServicePipeline';
+
 import { EnhancedServiceForm } from '@/components/services/EnhancedServiceForm';
 import { ServiceDetailsModal } from '@/components/services/ServiceDetailsModal';
 import { EnhancedCSVUploadServices } from '@/components/services/EnhancedCSVUploadServices';
@@ -63,17 +63,13 @@ import type { ServiceStatus, ServiceType } from '@/types/services';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 
-interface ServicesPageProps {
-  defaultView?: 'list' | 'pipeline';
-}
 
-export default function ServicesPage({ defaultView = 'list' }: ServicesPageProps) {
+export default function ServicesPage() {
   const { services, servicesByStatus, metrics, isLoading, error, refetch, deleteService, updateStatus } = useServices();
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [typeFilter, setTypeFilter] = useState<string>('all');
   const [deleteId, setDeleteId] = useState<string | null>(null);
-  const [view, setView] = useState<'list' | 'pipeline'>(defaultView);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingService, setEditingService] = useState<Service | null>(null);
   
@@ -358,53 +354,46 @@ export default function ServicesPage({ defaultView = 'list' }: ServicesPageProps
         })}
       </div>
 
-      {/* Tabs for views */}
-      <Tabs value={view} onValueChange={(v) => setView(v as 'list' | 'pipeline')}>
-        <div className="flex flex-col sm:flex-row sm:items-center gap-4">
-          <TabsList>
-            <TabsTrigger value="list">📋 Lista</TabsTrigger>
-            <TabsTrigger value="pipeline">📊 Pipeline</TabsTrigger>
-          </TabsList>
-          
-          {/* Filters */}
-          <div className="flex flex-1 gap-2">
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-              <Input
-                placeholder="Buscar por folio, placas o cliente..."
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                className="pl-10"
-              />
-            </div>
-            <Select value={statusFilter} onValueChange={setStatusFilter}>
-              <SelectTrigger className="w-40">
-                <SelectValue placeholder="Estado" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Todos</SelectItem>
-                {Object.entries(SERVICE_STATUS_CONFIG).map(([key, config]) => (
-                  <SelectItem key={key} value={key}>
-                    {config.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <Select value={typeFilter} onValueChange={setTypeFilter}>
-              <SelectTrigger className="w-40">
-                <SelectValue placeholder="Tipo" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Todos</SelectItem>
-                {Object.entries(SERVICE_TYPES).map(([key, config]) => (
-                  <SelectItem key={key} value={key}>
-                    {config.icon} {config.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+      {/* Filters */}
+      <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+        <div className="flex flex-1 gap-2">
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+            <Input
+              placeholder="Buscar por folio, placas o cliente..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="pl-10"
+            />
           </div>
+          <Select value={statusFilter} onValueChange={setStatusFilter}>
+            <SelectTrigger className="w-40">
+              <SelectValue placeholder="Estado" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Todos</SelectItem>
+              {Object.entries(SERVICE_STATUS_CONFIG).map(([key, config]) => (
+                <SelectItem key={key} value={key}>
+                  {config.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <Select value={typeFilter} onValueChange={setTypeFilter}>
+            <SelectTrigger className="w-40">
+              <SelectValue placeholder="Tipo" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Todos</SelectItem>
+              {Object.entries(SERVICE_TYPES).map(([key, config]) => (
+                <SelectItem key={key} value={key}>
+                  {config.icon} {config.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
+      </div>
 
         {/* Batch Actions Bar */}
         {selectedServices.size > 0 && (
@@ -474,249 +463,237 @@ export default function ServicesPage({ defaultView = 'list' }: ServicesPageProps
           </div>
         )}
 
-        {/* List View */}
-        <TabsContent value="list" className="mt-4">
-          {filteredServices.length === 0 ? (
-            <Card>
-              <CardContent className="flex flex-col items-center justify-center py-12">
-                <ClipboardList className="w-12 h-12 text-muted-foreground mb-4" />
-                <h3 className="text-lg font-medium">No hay servicios</h3>
-                <p className="text-muted-foreground text-center max-w-sm mt-1">
-                  {search || statusFilter !== 'all' || typeFilter !== 'all'
-                    ? 'No se encontraron servicios con los filtros aplicados.'
-                    : 'Comienza creando tu primer servicio.'}
-                </p>
-                {!search && statusFilter === 'all' && typeFilter === 'all' && (
-                  <Button className="mt-4" onClick={handleOpenNew}>
-                    <Plus className="w-4 h-4 mr-2" />
-                    Crear Servicio
-                  </Button>
-                )}
-              </CardContent>
-            </Card>
-          ) : (
-            <Card>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead className="w-[40px]">
-                      <Checkbox
-                        checked={selectedServices.size === filteredServices.length && filteredServices.length > 0}
-                        onCheckedChange={toggleSelectAll}
-                      />
-                    </TableHead>
-                    <TableHead>Folio</TableHead>
-                    <TableHead>Fecha</TableHead>
-                    <TableHead>Cliente</TableHead>
-                    <TableHead>Vehículo</TableHead>
-                    <TableHead>Origen/Destino</TableHead>
-                    <TableHead>Grúa</TableHead>
-                    <TableHead>Operador</TableHead>
-                    <TableHead className="text-right">Valor</TableHead>
-                    <TableHead>Estado</TableHead>
-                    <TableHead className="w-[140px]">Acciones</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {filteredServices.map((service) => {
-                    const statusConfig = SERVICE_STATUS_CONFIG[service.status as ServiceStatus];
-                    const nextStatuses = getNextStatuses(service.status as ServiceStatus);
-                    const client = service.client as any;
-                    const crane = service.crane as any;
-                    const operator = service.operator as any;
+      {/* List View */}
+      <div className="mt-4">
+        {filteredServices.length === 0 ? (
+          <Card>
+            <CardContent className="flex flex-col items-center justify-center py-12">
+              <ClipboardList className="w-12 h-12 text-muted-foreground mb-4" />
+              <h3 className="text-lg font-medium">No hay servicios</h3>
+              <p className="text-muted-foreground text-center max-w-sm mt-1">
+                {search || statusFilter !== 'all' || typeFilter !== 'all'
+                  ? 'No se encontraron servicios con los filtros aplicados.'
+                  : 'Comienza creando tu primer servicio.'}
+              </p>
+              {!search && statusFilter === 'all' && typeFilter === 'all' && (
+                <Button className="mt-4" onClick={handleOpenNew}>
+                  <Plus className="w-4 h-4 mr-2" />
+                  Crear Servicio
+                </Button>
+              )}
+            </CardContent>
+          </Card>
+        ) : (
+          <Card>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="w-[40px]">
+                    <Checkbox
+                      checked={selectedServices.size === filteredServices.length && filteredServices.length > 0}
+                      onCheckedChange={toggleSelectAll}
+                    />
+                  </TableHead>
+                  <TableHead>Folio</TableHead>
+                  <TableHead>Fecha</TableHead>
+                  <TableHead>Cliente</TableHead>
+                  <TableHead>Vehículo</TableHead>
+                  <TableHead>Origen/Destino</TableHead>
+                  <TableHead>Grúa</TableHead>
+                  <TableHead>Operador</TableHead>
+                  <TableHead className="text-right">Valor</TableHead>
+                  <TableHead>Estado</TableHead>
+                  <TableHead className="w-[140px]">Acciones</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {filteredServices.map((service) => {
+                  const statusConfig = SERVICE_STATUS_CONFIG[service.status as ServiceStatus];
+                  const nextStatuses = getNextStatuses(service.status as ServiceStatus);
+                  const client = service.client as any;
+                  const crane = service.crane as any;
+                  const operator = service.operator as any;
 
-                    // Format vehicle brand/model, detecting UUIDs
-                    const isUUID = (str: string | null) => str && /^[0-9a-f]{8}-[0-9a-f]{4}-/i.test(str);
-                    const brand = isUUID(service.vehicle_brand) ? null : service.vehicle_brand;
-                    const model = isUUID(service.vehicle_model) ? null : service.vehicle_model;
-                    const vehicleText = [brand, model].filter(Boolean).join(' ');
+                  // Format vehicle brand/model, detecting UUIDs
+                  const isUUID = (str: string | null) => str && /^[0-9a-f]{8}-[0-9a-f]{4}-/i.test(str);
+                  const brand = isUUID(service.vehicle_brand) ? null : service.vehicle_brand;
+                  const model = isUUID(service.vehicle_model) ? null : service.vehicle_model;
+                  const vehicleText = [brand, model].filter(Boolean).join(' ');
 
-                    return (
-                      <TableRow key={service.id}>
-                        {/* Checkbox */}
-                        <TableCell>
-                          <Checkbox
-                            checked={selectedServices.has(service.id)}
-                            onCheckedChange={() => toggleSelect(service.id)}
-                          />
-                        </TableCell>
-                        
-                        {/* Folio - Clickable green link */}
-                        <TableCell>
-                          <button
-                            onClick={() => handleViewDetails(service)}
-                            className="text-green-600 hover:text-green-700 hover:underline font-medium font-mono"
-                          >
-                            {service.folio}
-                          </button>
-                        </TableCell>
-                        
-                        {/* Fecha */}
-                        <TableCell className="text-sm">
-                          {service.service_date 
-                            ? format(new Date(service.service_date), 'dd/MM/yyyy', { locale: es })
-                            : service.scheduled_date
-                              ? format(new Date(service.scheduled_date), 'dd/MM/yyyy', { locale: es })
-                              : '-'}
-                        </TableCell>
-                        
-                        {/* Cliente - Name + Type + Tax ID */}
-                        <TableCell>
-                          <div className="space-y-0.5">
-                            <p className="font-medium text-sm">{client?.name || 'Sin cliente'}</p>
-                            {client && (
-                              <p className="text-xs text-muted-foreground">
-                                {client.type === 'corporate' ? 'Empresa' : 'Particular'}
-                                {client.tax_id && ` • ${client.tax_id}`}
-                              </p>
+                  return (
+                    <TableRow key={service.id}>
+                      {/* Checkbox */}
+                      <TableCell>
+                        <Checkbox
+                          checked={selectedServices.has(service.id)}
+                          onCheckedChange={() => toggleSelect(service.id)}
+                        />
+                      </TableCell>
+                      
+                      {/* Folio - Clickable green link */}
+                      <TableCell>
+                        <button
+                          onClick={() => handleViewDetails(service)}
+                          className="text-green-600 hover:text-green-700 hover:underline font-medium font-mono"
+                        >
+                          {service.folio}
+                        </button>
+                      </TableCell>
+                      
+                      {/* Fecha */}
+                      <TableCell className="text-sm">
+                        {service.service_date 
+                          ? format(new Date(service.service_date), 'dd/MM/yyyy', { locale: es })
+                          : service.scheduled_date
+                            ? format(new Date(service.scheduled_date), 'dd/MM/yyyy', { locale: es })
+                            : '-'}
+                      </TableCell>
+                      
+                      {/* Cliente - Name + Type + Tax ID */}
+                      <TableCell>
+                        <div className="space-y-0.5">
+                          <p className="font-medium text-sm">{client?.name || 'Sin cliente'}</p>
+                          {client && (
+                            <p className="text-xs text-muted-foreground">
+                              {client.type === 'corporate' ? 'Empresa' : 'Particular'}
+                              {client.tax_id && ` • ${client.tax_id}`}
+                            </p>
+                          )}
+                        </div>
+                      </TableCell>
+                      
+                      {/* Vehículo - Brand Model (Plates) */}
+                      <TableCell>
+                        <div className="text-sm">
+                          {vehicleText && <p>{vehicleText}</p>}
+                          {service.vehicle_plates && (
+                            <p className="font-mono text-muted-foreground text-xs">
+                              ({service.vehicle_plates})
+                            </p>
+                          )}
+                          {!vehicleText && !service.vehicle_plates && '-'}
+                        </div>
+                      </TableCell>
+                      
+                      {/* Origen/Destino */}
+                      <TableCell>
+                        <div className="text-sm max-w-[180px]">
+                          <span className="truncate block">
+                            {service.origin_city || service.origin_address || 'N/A'}
+                          </span>
+                          <span className="text-muted-foreground">→</span>
+                          <span className="truncate block">
+                            {service.destination_city || service.destination_address || 'N/A'}
+                          </span>
+                        </div>
+                      </TableCell>
+                      
+                      {/* Grúa */}
+                      <TableCell className="text-sm">
+                        {crane?.unit_number || '-'}
+                      </TableCell>
+                      
+                      {/* Operador */}
+                      <TableCell className="text-sm">
+                        {operator?.full_name || '-'}
+                      </TableCell>
+                      
+                      {/* Valor */}
+                      <TableCell className="text-right font-medium">
+                        {formatCLP(service.subtotal || 0)}
+                      </TableCell>
+                      
+                      {/* Estado */}
+                      <TableCell>
+                        <Badge className={`${statusConfig.bgColor} ${statusConfig.textColor} border-0`}>
+                          {statusConfig.label}
+                        </Badge>
+                      </TableCell>
+                      
+                      {/* Acciones - Visible icon buttons */}
+                      <TableCell>
+                        <TooltipProvider delayDuration={300}>
+                          <div className="flex items-center gap-0.5">
+                            {/* Advance status button - only show if there are valid transitions */}
+                            {nextStatuses.length > 0 && (
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="h-8 w-8 text-green-600 hover:text-green-700 hover:bg-green-50"
+                                    onClick={() => handleStatusChange(service.id, nextStatuses[0])}
+                                  >
+                                    <Check className="w-4 h-4" />
+                                  </Button>
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                  <p>Mover a {SERVICE_STATUS_CONFIG[nextStatuses[0]].label}</p>
+                                </TooltipContent>
+                              </Tooltip>
                             )}
+                            
+                            {/* View details */}
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  className="h-8 w-8"
+                                  onClick={() => handleViewDetails(service)}
+                                >
+                                  <Eye className="w-4 h-4" />
+                                </Button>
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                <p>Ver detalle</p>
+                              </TooltipContent>
+                            </Tooltip>
+                            
+                            {/* Edit */}
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  className="h-8 w-8 text-blue-600 hover:text-blue-700 hover:bg-blue-50"
+                                  onClick={() => handleEdit(service)}
+                                >
+                                  <Pencil className="w-4 h-4" />
+                                </Button>
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                <p>Editar</p>
+                              </TooltipContent>
+                            </Tooltip>
+                            
+                            {/* Delete */}
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  className="h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10"
+                                  onClick={() => setDeleteId(service.id)}
+                                >
+                                  <Trash2 className="w-4 h-4" />
+                                </Button>
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                <p>Eliminar</p>
+                              </TooltipContent>
+                            </Tooltip>
                           </div>
-                        </TableCell>
-                        
-                        {/* Vehículo - Brand Model (Plates) */}
-                        <TableCell>
-                          <div className="text-sm">
-                            {vehicleText && <p>{vehicleText}</p>}
-                            {service.vehicle_plates && (
-                              <p className="font-mono text-muted-foreground text-xs">
-                                ({service.vehicle_plates})
-                              </p>
-                            )}
-                            {!vehicleText && !service.vehicle_plates && '-'}
-                          </div>
-                        </TableCell>
-                        
-                        {/* Origen/Destino */}
-                        <TableCell>
-                          <div className="text-sm max-w-[180px]">
-                            <span className="truncate block">
-                              {service.origin_city || service.origin_address || 'N/A'}
-                            </span>
-                            <span className="text-muted-foreground">→</span>
-                            <span className="truncate block">
-                              {service.destination_city || service.destination_address || 'N/A'}
-                            </span>
-                          </div>
-                        </TableCell>
-                        
-                        {/* Grúa */}
-                        <TableCell className="text-sm">
-                          {crane?.unit_number || '-'}
-                        </TableCell>
-                        
-                        {/* Operador */}
-                        <TableCell className="text-sm">
-                          {operator?.full_name || '-'}
-                        </TableCell>
-                        
-                        {/* Valor */}
-                        <TableCell className="text-right font-medium">
-                          {formatCLP(service.subtotal || 0)}
-                        </TableCell>
-                        
-                        {/* Estado */}
-                        <TableCell>
-                          <Badge className={`${statusConfig.bgColor} ${statusConfig.textColor} border-0`}>
-                            {statusConfig.label}
-                          </Badge>
-                        </TableCell>
-                        
-                        {/* Acciones - Visible icon buttons */}
-                        <TableCell>
-                          <TooltipProvider delayDuration={300}>
-                            <div className="flex items-center gap-0.5">
-                              {/* Advance status button - only show if there are valid transitions */}
-                              {nextStatuses.length > 0 && (
-                                <Tooltip>
-                                  <TooltipTrigger asChild>
-                                    <Button
-                                      variant="ghost"
-                                      size="icon"
-                                      className="h-8 w-8 text-green-600 hover:text-green-700 hover:bg-green-50"
-                                      onClick={() => handleStatusChange(service.id, nextStatuses[0])}
-                                    >
-                                      <Check className="w-4 h-4" />
-                                    </Button>
-                                  </TooltipTrigger>
-                                  <TooltipContent>
-                                    <p>Mover a {SERVICE_STATUS_CONFIG[nextStatuses[0]].label}</p>
-                                  </TooltipContent>
-                                </Tooltip>
-                              )}
-                              
-                              {/* View details */}
-                              <Tooltip>
-                                <TooltipTrigger asChild>
-                                  <Button
-                                    variant="ghost"
-                                    size="icon"
-                                    className="h-8 w-8"
-                                    onClick={() => handleViewDetails(service)}
-                                  >
-                                    <Eye className="w-4 h-4" />
-                                  </Button>
-                                </TooltipTrigger>
-                                <TooltipContent>
-                                  <p>Ver detalle</p>
-                                </TooltipContent>
-                              </Tooltip>
-                              
-                              {/* Edit */}
-                              <Tooltip>
-                                <TooltipTrigger asChild>
-                                  <Button
-                                    variant="ghost"
-                                    size="icon"
-                                    className="h-8 w-8 text-blue-600 hover:text-blue-700 hover:bg-blue-50"
-                                    onClick={() => handleEdit(service)}
-                                  >
-                                    <Pencil className="w-4 h-4" />
-                                  </Button>
-                                </TooltipTrigger>
-                                <TooltipContent>
-                                  <p>Editar</p>
-                                </TooltipContent>
-                              </Tooltip>
-                              
-                              {/* Delete */}
-                              <Tooltip>
-                                <TooltipTrigger asChild>
-                                  <Button
-                                    variant="ghost"
-                                    size="icon"
-                                    className="h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10"
-                                    onClick={() => setDeleteId(service.id)}
-                                  >
-                                    <Trash2 className="w-4 h-4" />
-                                  </Button>
-                                </TooltipTrigger>
-                                <TooltipContent>
-                                  <p>Eliminar</p>
-                                </TooltipContent>
-                              </Tooltip>
-                            </div>
-                          </TooltipProvider>
-                        </TableCell>
-                      </TableRow>
-                    );
-                  })}
-                </TableBody>
-              </Table>
-            </Card>
-          )}
-        </TabsContent>
-
-        {/* Pipeline View */}
-        <TabsContent value="pipeline" className="mt-4">
-          <ServicePipeline
-            servicesByStatus={servicesByStatus as any}
-            onStatusChange={async (id, newStatus) => {
-              await updateStatus.mutateAsync({ id, status: newStatus });
-            }}
-            onDelete={setDeleteId}
-          />
-        </TabsContent>
-      </Tabs>
+                        </TooltipProvider>
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
+              </TableBody>
+            </Table>
+          </Card>
+        )}
+      </div>
 
       {/* Delete Single Service Dialog */}
       <AlertDialog open={!!deleteId} onOpenChange={() => setDeleteId(null)}>
