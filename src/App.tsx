@@ -129,7 +129,7 @@ const App = () => (
               <Route path="/servicios" element={<ServicesPage />} />
               <Route path="/servicios/nuevo" element={<Navigate to="/servicios" replace />} />
               <Route path="/servicios/:id/editar" element={<Navigate to="/servicios" replace />} />
-              <Route path="/pipeline" element={<ServicesPage defaultView="pipeline" />} />
+              
               
               {/* Finance Routes */}
               <Route path="/facturacion" element={<InvoicesPage />} />
