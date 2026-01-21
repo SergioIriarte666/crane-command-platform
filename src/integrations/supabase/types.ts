@@ -2339,6 +2339,7 @@ export type Database = {
           po_file_url: string | null
           po_number: string | null
           priority: Database["public"]["Enums"]["service_priority"]
+          purchase_order_number: string | null
           quote_number: string | null
           request_date: string | null
           scheduled_date: string | null
@@ -2420,6 +2421,7 @@ export type Database = {
           po_file_url?: string | null
           po_number?: string | null
           priority?: Database["public"]["Enums"]["service_priority"]
+          purchase_order_number?: string | null
           quote_number?: string | null
           request_date?: string | null
           scheduled_date?: string | null
@@ -2501,6 +2503,7 @@ export type Database = {
           po_file_url?: string | null
           po_number?: string | null
           priority?: Database["public"]["Enums"]["service_priority"]
+          purchase_order_number?: string | null
           quote_number?: string | null
           request_date?: string | null
           scheduled_date?: string | null
