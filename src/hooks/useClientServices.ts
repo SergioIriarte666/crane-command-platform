@@ -69,6 +69,29 @@ export interface ServiceBatchUpdateData {
   onProgress?: (progress: BatchProgressCallback) => void;
 }
 
+export function useUpdateServiceStatus() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ serviceId, status }: { serviceId: string; status: string }) => {
+      const { error } = await supabase
+        .from('services')
+        .update({ status })
+        .eq('id', serviceId);
+      
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['services'] });
+      queryClient.invalidateQueries({ queryKey: ['client-services'] });
+      toast.success('Estado actualizado');
+    },
+    onError: (error: Error) => {
+      toast.error(`Error al actualizar: ${error.message}`);
+    },
+  });
+}
+
 export function useUpdateServicesBatch() {
   const queryClient = useQueryClient();
 
