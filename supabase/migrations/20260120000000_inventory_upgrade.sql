@@ -93,6 +93,7 @@ CREATE POLICY "Users can manage their tenant's audit sessions" ON public.invento
 CREATE TABLE IF NOT EXISTS public.inventory_audit_items (
     id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
     session_id UUID REFERENCES public.inventory_audit_sessions(id) ON DELETE CASCADE,
+    tenant_id UUID REFERENCES public.tenants(id) ON DELETE CASCADE,
     item_id UUID REFERENCES public.inventory_items(id) ON DELETE CASCADE,
     batch_id UUID REFERENCES public.inventory_batches(id),
     expected_quantity NUMERIC(15, 2),
@@ -102,16 +103,16 @@ CREATE TABLE IF NOT EXISTS public.inventory_audit_items (
     updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
+-- Ensure tenant_id exists (safety check for existing tables)
+DO $$
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name = 'inventory_audit_items' AND column_name = 'tenant_id') THEN
+        ALTER TABLE public.inventory_audit_items ADD COLUMN tenant_id UUID REFERENCES public.tenants(id) ON DELETE CASCADE;
+    END IF;
+END $$;
+
 -- Enable RLS
 ALTER TABLE public.inventory_audit_items ENABLE ROW LEVEL SECURITY;
-
-CREATE POLICY "Users can view their tenant's audit items" ON public.inventory_audit_items
-    FOR SELECT USING (tenant_id = (select auth.jwt() ->> 'tenant_id')::uuid)
-    -- Note: tenant_id is not directly on this table, but we can join via session_id or rely on session RLS if we had policies checking relations, but simple check is harder.
-    -- For simplicity in Supabase, often we duplicate tenant_id or use exists.
-    -- Let's add tenant_id to audit_items for easier RLS
-;
-ALTER TABLE public.inventory_audit_items ADD COLUMN tenant_id UUID REFERENCES public.tenants(id) ON DELETE CASCADE;
 
 CREATE POLICY "Users can view their tenant's audit items" ON public.inventory_audit_items
     FOR SELECT USING (tenant_id = (select auth.jwt() ->> 'tenant_id')::uuid);

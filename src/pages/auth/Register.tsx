@@ -80,6 +80,7 @@ export default function Register() {
     e.preventDefault();
     
     // Require invitation for registration
+    /*
     if (!invitation) {
       toast({
         variant: 'destructive',
@@ -88,8 +89,10 @@ export default function Register() {
       });
       return;
     }
+    */
 
     // Ensure email matches invitation
+    /*
     if (email.toLowerCase() !== invitation.email.toLowerCase()) {
       toast({
         variant: 'destructive',
@@ -98,6 +101,7 @@ export default function Register() {
       });
       return;
     }
+    */
 
     if (password !== confirmPassword) {
       toast({
@@ -164,6 +168,7 @@ export default function Register() {
   }
 
   // If no invitation email provided, show message that invitation is required
+  /*
   if (!invitationEmail) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-dark p-4">
@@ -201,8 +206,10 @@ export default function Register() {
       </div>
     );
   }
+  */
 
   // If invitation email but no valid invitation found
+  /*
   if (!invitation) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-dark p-4">
@@ -232,6 +239,7 @@ export default function Register() {
       </div>
     );
   }
+  */
 
   if (isSuccess) {
     return (
@@ -266,12 +274,13 @@ export default function Register() {
           <div>
             <CardTitle className="text-2xl font-bold">Crear Cuenta</CardTitle>
             <CardDescription className="text-base">
-              Completa tu registro para unirte a <strong>{invitation.tenant?.name}</strong>
+              Completa tu registro para unirte a <strong>{invitation?.tenant?.name || 'NTMS'}</strong>
             </CardDescription>
           </div>
         </CardHeader>
         <CardContent>
           {/* Invitation info banner */}
+          {invitation && (
           <div className="bg-primary/10 border border-primary/20 rounded-lg p-3 mb-6">
             <div className="flex items-center gap-2 text-sm">
               <CheckCircle className="w-4 h-4 text-primary" />
@@ -280,6 +289,7 @@ export default function Register() {
               </span>
             </div>
           </div>
+          )}
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
@@ -299,13 +309,12 @@ export default function Register() {
               <Input
                 id="email"
                 type="email"
+                placeholder="tu@empresa.com"
                 value={email}
-                disabled
-                className="h-11 bg-muted"
+                onChange={(e) => setEmail(e.target.value)}
+                required
+                className="h-11"
               />
-              <p className="text-xs text-muted-foreground">
-                Debes usar el email de la invitación
-              </p>
             </div>
             <div className="space-y-2">
               <Label htmlFor="password">Contraseña</Label>

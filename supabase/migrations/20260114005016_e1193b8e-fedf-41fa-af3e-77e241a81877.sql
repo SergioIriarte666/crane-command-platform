@@ -1,3 +1,6 @@
+-- Enable pgcrypto extension for gen_random_bytes
+CREATE EXTENSION IF NOT EXISTS pgcrypto;
+
 -- Create invitations table for user invitations to tenants
 CREATE TABLE public.invitations (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -5,7 +8,7 @@ CREATE TABLE public.invitations (
   email TEXT NOT NULL,
   role public.app_role DEFAULT 'operator',
   invited_by UUID NOT NULL,
-  token TEXT UNIQUE NOT NULL DEFAULT encode(gen_random_bytes(32), 'hex'),
+  token TEXT UNIQUE NOT NULL DEFAULT encode(extensions.gen_random_bytes(32), 'hex'),
   expires_at TIMESTAMPTZ NOT NULL DEFAULT (now() + interval '7 days'),
   accepted_at TIMESTAMPTZ,
   created_at TIMESTAMPTZ DEFAULT now()

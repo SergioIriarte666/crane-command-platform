@@ -1,0 +1,133 @@
+open supabase/.temp/profile: no such file or directory
+Loading project ref from file: supabase/.temp/project-ref
+Using connection pooler: postgresql://postgres.qfopiqsqufravywakdpa@aws-1-us-east-2.pooler.supabase.com:5432/postgres
+Initialising login role...
+Using access token for profile: supabase
+Supabase CLI 2.72.8
+Using profile: supabase (supabase.co)
+Connecting to remote database...
+2026/01/22 12:42:11 PG Send: {"Type":"StartupMessage","ProtocolVersion":196608,"Parameters":{"database":"postgres","user":"cli_login_postgres.qfopiqsqufravywakdpa"}}
+2026/01/22 12:42:11 PG Recv: {"Type":"AuthenticationSASL","AuthMechanisms":["SCRAM-SHA-256"]}
+2026/01/22 12:42:11 PG Send: {"Type":"SASLInitialResponse","AuthMechanism":"SCRAM-SHA-256","Data":"n,,n=,r=l599SEMFhj2f80KIVQn2BWz9"}
+2026/01/22 12:42:12 PG Recv: {"Type":"AuthenticationSASLContinue","Data":"r=l599SEMFhj2f80KIVQn2BWz9RUxnMmtWN3NIcFZOVXNDUGRoSnhpUExYTmJ4SQ==,s=U1at6KnU8NFB/WPTOA8xOg==,i=4096"}
+2026/01/22 12:42:12 PG Send: {"Type":"SASLResponse","Data":"c=biws,r=l599SEMFhj2f80KIVQn2BWz9RUxnMmtWN3NIcFZOVXNDUGRoSnhpUExYTmJ4SQ==,p=oi0W/xku90RU95CbTNh11p9W1pBuIumIclGAnCImQ8A="}
+2026/01/22 12:42:12 PG Recv: {"Type":"AuthenticationSASLFinal","Data":"v=omq/RM+A3Ha1jm+z3Xms3XRKxAvX+VXsxBhyUPox578="}
+2026/01/22 12:42:12 PG Recv: {"Type":"AuthenticationOK"}
+2026/01/22 12:42:12 PG Recv: {"Type":"ParameterStatus","Name":"DateStyle","Value":"ISO, MDY"}
+2026/01/22 12:42:12 PG Recv: {"Type":"ParameterStatus","Name":"IntervalStyle","Value":"postgres"}
+2026/01/22 12:42:12 PG Recv: {"Type":"ParameterStatus","Name":"TimeZone","Value":"UTC"}
+2026/01/22 12:42:12 PG Recv: {"Type":"ParameterStatus","Name":"application_name","Value":"Supavisor"}
+2026/01/22 12:42:12 PG Recv: {"Type":"ParameterStatus","Name":"client_encoding","Value":"UTF8"}
+2026/01/22 12:42:12 PG Recv: {"Type":"ParameterStatus","Name":"default_transaction_read_only","Value":"off"}
+2026/01/22 12:42:12 PG Recv: {"Type":"ParameterStatus","Name":"in_hot_standby","Value":"off"}
+2026/01/22 12:42:12 PG Recv: {"Type":"ParameterStatus","Name":"integer_datetimes","Value":"on"}
+2026/01/22 12:42:12 PG Recv: {"Type":"ParameterStatus","Name":"is_superuser","Value":"off"}
+2026/01/22 12:42:12 PG Recv: {"Type":"ParameterStatus","Name":"scram_iterations","Value":"4096"}
+2026/01/22 12:42:12 PG Recv: {"Type":"ParameterStatus","Name":"server_encoding","Value":"UTF8"}
+2026/01/22 12:42:12 PG Recv: {"Type":"ParameterStatus","Name":"server_version","Value":"17.6"}
+2026/01/22 12:42:12 PG Recv: {"Type":"ParameterStatus","Name":"session_authorization","Value":"cli_login_postgres"}
+2026/01/22 12:42:12 PG Recv: {"Type":"ParameterStatus","Name":"standard_conforming_strings","Value":"on"}
+2026/01/22 12:42:12 PG Recv: {"Type":"BackendKeyData","ProcessID":253187316,"SecretKey":1275798489}
+2026/01/22 12:42:12 PG Recv: {"Type":"ReadyForQuery","TxStatus":"I"}
+2026/01/22 12:42:12 PG Send: {"Type":"Query","String":"SET SESSION ROLE postgres"}
+2026/01/22 12:42:12 PG Recv: {"Type":"CommandComplete","CommandTag":"SET"}
+2026/01/22 12:42:12 PG Recv: {"Type":"ReadyForQuery","TxStatus":"I"}
+2026/01/22 12:42:12 PG Send: {"Type":"Parse","Name":"lrupsc_1_0","Query":"SELECT version FROM supabase_migrations.schema_migrations ORDER BY version","ParameterOIDs":null}
+2026/01/22 12:42:12 PG Send: {"Type":"Describe","ObjectType":"S","Name":"lrupsc_1_0"}
+2026/01/22 12:42:12 PG Send: {"Type":"Sync"}
+2026/01/22 12:42:12 PG Recv: {"Type":"ParseComplete"}
+2026/01/22 12:42:12 PG Recv: {"Type":"ParameterDescription","ParameterOIDs":[]}
+2026/01/22 12:42:12 PG Recv: {"Type":"RowDescription","Fields":[{"Name":"version","TableOID":17489,"TableAttributeNumber":1,"DataTypeOID":25,"DataTypeSize":-1,"TypeModifier":-1,"Format":0}]}
+2026/01/22 12:42:12 PG Recv: {"Type":"ReadyForQuery","TxStatus":"I"}
+2026/01/22 12:42:12 PG Send: {"Type":"Bind","DestinationPortal":"","PreparedStatement":"lrupsc_1_0","ParameterFormatCodes":null,"Parameters":[],"ResultFormatCodes":[0]}
+2026/01/22 12:42:12 PG Send: {"Type":"Describe","ObjectType":"P","Name":""}
+2026/01/22 12:42:12 PG Send: {"Type":"Execute","Portal":"","MaxRows":0}
+2026/01/22 12:42:12 PG Send: {"Type":"Sync"}
+2026/01/22 12:42:13 PG Recv: {"Type":"BindComplete"}
+2026/01/22 12:42:13 PG Recv: {"Type":"RowDescription","Fields":[{"Name":"version","TableOID":17489,"TableAttributeNumber":1,"DataTypeOID":25,"DataTypeSize":-1,"TypeModifier":-1,"Format":0}]}
+2026/01/22 12:42:13 PG Recv: {"Type":"DataRow","Values":[{"text":"20260113213113"}]}
+2026/01/22 12:42:13 PG Recv: {"Type":"DataRow","Values":[{"text":"20260113213126"}]}
+2026/01/22 12:42:13 PG Recv: {"Type":"DataRow","Values":[{"text":"20260113214125"}]}
+2026/01/22 12:42:13 PG Recv: {"Type":"DataRow","Values":[{"text":"20260113215215"}]}
+2026/01/22 12:42:13 PG Recv: {"Type":"DataRow","Values":[{"text":"20260113215454"}]}
+2026/01/22 12:42:13 PG Recv: {"Type":"DataRow","Values":[{"text":"20260113220712"}]}
+2026/01/22 12:42:13 PG Recv: {"Type":"DataRow","Values":[{"text":"20260113221511"}]}
+2026/01/22 12:42:13 PG Recv: {"Type":"DataRow","Values":[{"text":"20260113233918"}]}
+2026/01/22 12:42:13 PG Recv: {"Type":"DataRow","Values":[{"text":"20260114002807"}]}
+2026/01/22 12:42:13 PG Recv: {"Type":"DataRow","Values":[{"text":"20260114003326"}]}
+2026/01/22 12:42:13 PG Recv: {"Type":"DataRow","Values":[{"text":"20260114005016"}]}
+2026/01/22 12:42:13 PG Recv: {"Type":"DataRow","Values":[{"text":"20260114010739"}]}
+2026/01/22 12:42:13 PG Recv: {"Type":"DataRow","Values":[{"text":"20260114011331"}]}
+2026/01/22 12:42:13 PG Recv: {"Type":"DataRow","Values":[{"text":"20260114014851"}]}
+2026/01/22 12:42:13 PG Recv: {"Type":"DataRow","Values":[{"text":"20260114015437"}]}
+2026/01/22 12:42:13 PG Recv: {"Type":"DataRow","Values":[{"text":"20260114021046"}]}
+2026/01/22 12:42:13 PG Recv: {"Type":"DataRow","Values":[{"text":"20260114021605"}]}
+2026/01/22 12:42:13 PG Recv: {"Type":"DataRow","Values":[{"text":"20260114023336"}]}
+2026/01/22 12:42:13 PG Recv: {"Type":"DataRow","Values":[{"text":"20260114024006"}]}
+2026/01/22 12:42:13 PG Recv: {"Type":"DataRow","Values":[{"text":"20260114024650"}]}
+2026/01/22 12:42:13 PG Recv: {"Type":"DataRow","Values":[{"text":"20260114033222"}]}
+2026/01/22 12:42:13 PG Recv: {"Type":"DataRow","Values":[{"text":"20260114035937"}]}
+2026/01/22 12:42:13 PG Recv: {"Type":"DataRow","Values":[{"text":"20260114042811"}]}
+2026/01/22 12:42:13 PG Recv: {"Type":"DataRow","Values":[{"text":"20260114151630"}]}
+2026/01/22 12:42:13 PG Recv: {"Type":"DataRow","Values":[{"text":"20260114151846"}]}
+2026/01/22 12:42:13 PG Recv: {"Type":"DataRow","Values":[{"text":"20260115125507"}]}
+2026/01/22 12:42:13 PG Recv: {"Type":"DataRow","Values":[{"text":"20260115133212"}]}
+2026/01/22 12:42:13 PG Recv: {"Type":"DataRow","Values":[{"text":"20260115134216"}]}
+2026/01/22 12:42:13 PG Recv: {"Type":"DataRow","Values":[{"text":"20260115151128"}]}
+2026/01/22 12:42:13 PG Recv: {"Type":"DataRow","Values":[{"text":"20260115190511"}]}
+2026/01/22 12:42:13 PG Recv: {"Type":"DataRow","Values":[{"text":"20260115191627"}]}
+2026/01/22 12:42:13 PG Recv: {"Type":"DataRow","Values":[{"text":"20260115192416"}]}
+2026/01/22 12:42:13 PG Recv: {"Type":"DataRow","Values":[{"text":"20260115200955"}]}
+2026/01/22 12:42:13 PG Recv: {"Type":"DataRow","Values":[{"text":"20260115202805"}]}
+2026/01/22 12:42:13 PG Recv: {"Type":"DataRow","Values":[{"text":"20260115205901"}]}
+2026/01/22 12:42:13 PG Recv: {"Type":"DataRow","Values":[{"text":"20260116000000"}]}
+2026/01/22 12:42:13 PG Recv: {"Type":"DataRow","Values":[{"text":"20260116225706"}]}
+2026/01/22 12:42:13 PG Recv: {"Type":"DataRow","Values":[{"text":"20260116230541"}]}
+2026/01/22 12:42:13 PG Recv: {"Type":"DataRow","Values":[{"text":"20260119204430"}]}
+2026/01/22 12:42:13 PG Recv: {"Type":"DataRow","Values":[{"text":"20260120000000"}]}
+2026/01/22 12:42:13 PG Recv: {"Type":"DataRow","Values":[{"text":"20260121000000"}]}
+2026/01/22 12:42:13 PG Recv: {"Type":"DataRow","Values":[{"text":"20260121120000"}]}
+2026/01/22 12:42:13 PG Recv: {"Type":"DataRow","Values":[{"text":"20260121144325"}]}
+2026/01/22 12:42:13 PG Recv: {"Type":"DataRow","Values":[{"text":"20260121152327"}]}
+2026/01/22 12:42:13 PG Recv: {"Type":"DataRow","Values":[{"text":"20260121154758"}]}
+2026/01/22 12:42:13 PG Recv: {"Type":"DataRow","Values":[{"text":"20260121155115"}]}
+2026/01/22 12:42:13 PG Recv: {"Type":"DataRow","Values":[{"text":"20260122000000"}]}
+2026/01/22 12:42:13 PG Recv: {"Type":"DataRow","Values":[{"text":"20260122000001"}]}
+2026/01/22 12:42:13 PG Recv: {"Type":"CommandComplete","CommandTag":"SELECT 48"}
+2026/01/22 12:42:13 PG Recv: {"Type":"ReadyForQuery","TxStatus":"I"}
+Do you want to push these migrations to the remote database?
+ • 20260122999999_restore_data.sql
+
+ [Y/n] 2026/01/22 12:43:13 PG Recv: {"Type":"ParameterStatus","Name":"application_name","Value":"Supavisor"}
+2026/01/22 12:44:13 PG Recv: {"Type":"ParameterStatus","Name":"application_name","Value":"Supavisor"}
+2026/01/22 12:45:13 PG Recv: {"Type":"ParameterStatus","Name":"application_name","Value":"Supavisor"}
+2026/01/22 12:46:13 PG Recv: {"Type":"ParameterStatus","Name":"application_name","Value":"Supavisor"}
+2026/01/22 12:47:13 PG Recv: {"Type":"ParameterStatus","Name":"application_name","Value":"Supavisor"}
+2026/01/22 16:35:54 PG Send: {"Type":"Parse","Name":"","Query":"SET lock_timeout = '4s'","ParameterOIDs":null}
+2026/01/22 16:35:54 PG Send: {"Type":"Bind","DestinationPortal":"","PreparedStatement":"","ParameterFormatCodes":null,"Parameters":[],"ResultFormatCodes":[]}
+2026/01/22 16:35:54 PG Send: {"Type":"Describe","ObjectType":"P","Name":""}
+2026/01/22 16:35:54 PG Send: {"Type":"Execute","Portal":"","MaxRows":0}
+2026/01/22 16:35:54 PG Send: {"Type":"Parse","Name":"","Query":"CREATE SCHEMA IF NOT EXISTS supabase_migrations","ParameterOIDs":null}
+2026/01/22 16:35:54 PG Send: {"Type":"Bind","DestinationPortal":"","PreparedStatement":"","ParameterFormatCodes":null,"Parameters":[],"ResultFormatCodes":[]}
+2026/01/22 16:35:54 PG Send: {"Type":"Describe","ObjectType":"P","Name":""}
+2026/01/22 16:35:54 PG Send: {"Type":"Execute","Portal":"","MaxRows":0}
+2026/01/22 16:35:54 PG Send: {"Type":"Parse","Name":"","Query":"CREATE TABLE IF NOT EXISTS supabase_migrations.schema_migrations (version text NOT NULL PRIMARY KEY)","ParameterOIDs":null}
+2026/01/22 16:35:54 PG Send: {"Type":"Bind","DestinationPortal":"","PreparedStatement":"","ParameterFormatCodes":null,"Parameters":[],"ResultFormatCodes":[]}
+2026/01/22 16:35:54 PG Send: {"Type":"Describe","ObjectType":"P","Name":""}
+2026/01/22 16:35:54 PG Send: {"Type":"Execute","Portal":"","MaxRows":0}
+2026/01/22 16:35:54 PG Send: {"Type":"Parse","Name":"","Query":"ALTER TABLE supabase_migrations.schema_migrations ADD COLUMN IF NOT EXISTS statements text[]","ParameterOIDs":null}
+2026/01/22 16:35:54 PG Send: {"Type":"Bind","DestinationPortal":"","PreparedStatement":"","ParameterFormatCodes":null,"Parameters":[],"ResultFormatCodes":[]}
+2026/01/22 16:35:54 PG Send: {"Type":"Describe","ObjectType":"P","Name":""}
+2026/01/22 16:35:54 PG Send: {"Type":"Execute","Portal":"","MaxRows":0}
+2026/01/22 16:35:54 PG Send: {"Type":"Parse","Name":"","Query":"ALTER TABLE supabase_migrations.schema_migrations ADD COLUMN IF NOT EXISTS name text","ParameterOIDs":null}
+2026/01/22 16:35:54 PG Send: {"Type":"Bind","DestinationPortal":"","PreparedStatement":"","ParameterFormatCodes":null,"Parameters":[],"ResultFormatCodes":[]}
+2026/01/22 16:35:54 PG Send: {"Type":"Describe","ObjectType":"P","Name":""}
+2026/01/22 16:35:54 PG Send: {"Type":"Execute","Portal":"","MaxRows":0}
+2026/01/22 16:35:54 PG Send: {"Type":"Sync"}
+panic: read tcp 192.168.1.211:63478->3.131.201.192:5432: read: connection reset by peer
+
+goroutine 41 [running]:
+github.com/supabase/cli/internal/debug.(*Proxy).DialFunc.func1()
+	github.com/supabase/cli/internal/debug/postgres.go:68 +0x304
+created by github.com/supabase/cli/internal/debug.(*Proxy).DialFunc in goroutine 1
+	github.com/supabase/cli/internal/debug/postgres.go:47 +0x128
