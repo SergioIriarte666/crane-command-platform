@@ -2,7 +2,6 @@
 -- This is helpful for initial migration to ensure access
 UPDATE auth.users 
 SET email_confirmed_at = now(),
-    confirmed_at = now(),
     last_sign_in_at = now(),
     raw_user_meta_data = jsonb_set(
         COALESCE(raw_user_meta_data, '{}'::jsonb),
