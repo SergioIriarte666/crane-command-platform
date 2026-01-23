@@ -2,6 +2,12 @@
 -- MIGRATION: Complete Demo Subcategories and Pipeline Stages
 -- ==============================================================================
 
+-- Add missing service_status values
+ALTER TYPE public.service_status ADD VALUE IF NOT EXISTS 'purchase_order_pending';
+ALTER TYPE public.service_status ADD VALUE IF NOT EXISTS 'with_purchase_order';
+ALTER TYPE public.service_status ADD VALUE IF NOT EXISTS 'pending';
+ALTER TYPE public.service_status ADD VALUE IF NOT EXISTS 'failed';
+
 DO $$
 DECLARE
     v_tenant_id UUID;
