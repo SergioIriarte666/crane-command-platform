@@ -214,7 +214,7 @@ export function useClosures() {
       total: (closures as any[]).reduce((sum: number, c: any) => sum + (c.total || 0), 0),
     })),
     pendingApproval: closuresQuery.data?.filter(c => 
-      ['review', 'client_review'].includes(c.status)
+      ['pending_review', 'client_review'].includes(c.status)
     ).length || 0,
   };
 

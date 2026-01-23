@@ -69,6 +69,9 @@ interface Tenant {
   users_count?: number;
 }
 
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { SubscriptionAnalytics } from '@/components/admin/SubscriptionAnalytics';
+
 export default function TenantsAdminPage() {
   const { isSuperAdmin, loading: authLoading } = useAuth();
   const queryClient = useQueryClient();
@@ -250,129 +253,145 @@ export default function TenantsAdminPage() {
             Administración de Empresas
           </h1>
           <p className="text-muted-foreground mt-1">
-            Gestiona todas las empresas del sistema
+            Gestiona todas las empresas del sistema y monitorea su rendimiento
           </p>
         </div>
-        <Button onClick={() => setIsDialogOpen(true)}>
-          <Plus className="w-4 h-4 mr-2" />
-          Nueva Empresa
-        </Button>
       </div>
 
-      <Card>
-        <CardHeader>
-          <div className="flex items-center gap-4">
-            <div className="relative flex-1 max-w-sm">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-              <Input
-                placeholder="Buscar empresas..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10"
-              />
-            </div>
-            <Badge variant="secondary">
-              {filteredTenants?.length || 0} empresas
-            </Badge>
-          </div>
-        </CardHeader>
-        <CardContent>
-          {isLoading ? (
-            <div className="flex items-center justify-center py-12">
-              <Loader2 className="w-8 h-8 animate-spin text-primary" />
-            </div>
-          ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Empresa</TableHead>
-                  <TableHead>Identificador</TableHead>
-                  <TableHead>Plan</TableHead>
-                  <TableHead>Estado</TableHead>
-                  <TableHead>Límites</TableHead>
-                  <TableHead className="text-right">Acciones</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filteredTenants?.map((tenant) => (
-                  <TableRow key={tenant.id}>
-                    <TableCell>
-                      <div>
-                        <p className="font-medium">{tenant.name}</p>
-                        {tenant.email && (
-                          <p className="text-sm text-muted-foreground">{tenant.email}</p>
-                        )}
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <code className="bg-muted px-2 py-1 rounded text-sm">
-                        {tenant.slug}
-                      </code>
-                    </TableCell>
-                    <TableCell>
-                      <Badge variant="outline" className="capitalize">
-                        {tenant.plan || 'basic'}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>
-                      <Badge variant={tenant.is_active ? 'default' : 'secondary'}>
-                        {tenant.is_active ? 'Activo' : 'Inactivo'}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>
-                      <div className="text-sm">
-                        <span className="text-muted-foreground">
-                          {tenant.max_users} usuarios / {tenant.max_cranes} grúas
-                        </span>
-                      </div>
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="sm">
-                            <MoreHorizontal className="w-4 h-4" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuItem onClick={() => openEditDialog(tenant)}>
-                            <Edit2 className="w-4 h-4 mr-2" />
-                            Editar
-                          </DropdownMenuItem>
-                          <DropdownMenuItem
-                            onClick={() => toggleStatusMutation.mutate({
-                              id: tenant.id,
-                              is_active: !tenant.is_active,
-                            })}
-                          >
-                            {tenant.is_active ? (
-                              <>
-                                <XCircle className="w-4 h-4 mr-2" />
-                                Desactivar
-                              </>
-                            ) : (
-                              <>
-                                <CheckCircle className="w-4 h-4 mr-2" />
-                                Activar
-                              </>
+      <Tabs defaultValue="list" className="space-y-4">
+        <div className="flex items-center justify-between">
+          <TabsList>
+            <TabsTrigger value="list">Listado de Empresas</TabsTrigger>
+            <TabsTrigger value="analytics">Análisis de Suscripciones</TabsTrigger>
+          </TabsList>
+          
+          <Button onClick={() => setIsDialogOpen(true)}>
+            <Plus className="w-4 h-4 mr-2" />
+            Nueva Empresa
+          </Button>
+        </div>
+
+        <TabsContent value="list" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <div className="flex items-center gap-4">
+                <div className="relative flex-1 max-w-sm">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                  <Input
+                    placeholder="Buscar empresas..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="pl-10"
+                  />
+                </div>
+                <Badge variant="secondary">
+                  {filteredTenants?.length || 0} empresas
+                </Badge>
+              </div>
+            </CardHeader>
+            <CardContent>
+              {isLoading ? (
+                <div className="flex items-center justify-center py-12">
+                  <Loader2 className="w-8 h-8 animate-spin text-primary" />
+                </div>
+              ) : (
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Empresa</TableHead>
+                      <TableHead>Identificador</TableHead>
+                      <TableHead>Plan</TableHead>
+                      <TableHead>Estado</TableHead>
+                      <TableHead>Límites</TableHead>
+                      <TableHead className="text-right">Acciones</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {filteredTenants?.map((tenant) => (
+                      <TableRow key={tenant.id}>
+                        <TableCell>
+                          <div>
+                            <p className="font-medium">{tenant.name}</p>
+                            {tenant.email && (
+                              <p className="text-sm text-muted-foreground">{tenant.email}</p>
                             )}
-                          </DropdownMenuItem>
-                          <DropdownMenuItem
-                            className="text-destructive"
-                            onClick={() => setDeletingTenant(tenant)}
-                          >
-                            <Trash2 className="w-4 h-4 mr-2" />
-                            Eliminar
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          )}
-        </CardContent>
-      </Card>
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <code className="bg-muted px-2 py-1 rounded text-sm">
+                            {tenant.slug}
+                          </code>
+                        </TableCell>
+                        <TableCell>
+                          <Badge variant="outline" className="capitalize">
+                            {tenant.plan || 'basic'}
+                          </Badge>
+                        </TableCell>
+                        <TableCell>
+                          <Badge variant={tenant.is_active ? 'default' : 'secondary'}>
+                            {tenant.is_active ? 'Activo' : 'Inactivo'}
+                          </Badge>
+                        </TableCell>
+                        <TableCell>
+                          <div className="text-sm">
+                            <span className="text-muted-foreground">
+                              {tenant.max_users} usuarios / {tenant.max_cranes} grúas
+                            </span>
+                          </div>
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button variant="ghost" size="sm">
+                                <MoreHorizontal className="w-4 h-4" />
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                              <DropdownMenuItem onClick={() => openEditDialog(tenant)}>
+                                <Edit2 className="w-4 h-4 mr-2" />
+                                Editar
+                              </DropdownMenuItem>
+                              <DropdownMenuItem
+                                onClick={() => toggleStatusMutation.mutate({
+                                  id: tenant.id,
+                                  is_active: !tenant.is_active,
+                                })}
+                              >
+                                {tenant.is_active ? (
+                                  <>
+                                    <XCircle className="w-4 h-4 mr-2" />
+                                    Desactivar
+                                  </>
+                                ) : (
+                                  <>
+                                    <CheckCircle className="w-4 h-4 mr-2" />
+                                    Activar
+                                  </>
+                                )}
+                              </DropdownMenuItem>
+                              <DropdownMenuItem
+                                className="text-destructive"
+                                onClick={() => setDeletingTenant(tenant)}
+                              >
+                                <Trash2 className="w-4 h-4 mr-2" />
+                                Eliminar
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="analytics">
+          <SubscriptionAnalytics tenants={tenants || []} />
+        </TabsContent>
+      </Tabs>
 
       {/* Create/Edit Dialog */}
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>

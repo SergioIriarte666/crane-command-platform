@@ -8,6 +8,7 @@ Las intervenciones se centraron en tres áreas clave:
 1.  **Estabilidad y Seguridad (Auth & TypeScript)**: Corrección de condiciones de carrera en autenticación y endurecimiento de reglas de tipado.
 2.  **Funcionalidad Core (Inventario & Servicios)**: Optimización de procesos masivos y validaciones de integridad de datos.
 3.  **Experiencia de Usuario (UX/UI)**: Estandarización de manejo de errores y estados de carga.
+4.  **Inteligencia de Negocio (Analytics)**: Implementación de dashboard para análisis de suscripciones y crecimiento.
 
 ---
 
@@ -54,6 +55,14 @@ Las intervenciones se centraron en tres áreas clave:
     *   Estandarización de Skeletons para estados de carga.
     *   Aseguramiento de que el usuario siempre reciba retroalimentación visual (toast o pantalla de error) ante fallos.
 
+### 6. Análisis de Suscripciones (Nuevo)
+
+*   **Necesidad**: Falta de visibilidad agregada sobre el rendimiento de los tenants y suscripciones.
+*   **Solución**:
+    *   Implementación de `SubscriptionAnalytics` en el módulo de administración de tenants.
+    *   Visualización de KPIs clave: MRR Estimado, Churn Risk, Crecimiento mensual.
+    *   Gráficos interactivos de distribución de planes y evolución de altas.
+
 ---
 
 ## Roadmap de Implementación (Estado Actual)
@@ -65,6 +74,7 @@ Las intervenciones se centraron en tres áreas clave:
 | **Fase 2** | Validaciones en Inventario | ✅ Completado | Medio (Integridad de Datos) |
 | **Fase 2** | Optimización Carga XML | ✅ Completado | Medio (Rendimiento) |
 | **Fase 3** | Estandarización UX/UI (Errores) | ✅ Completado | Medio (Usabilidad) |
+| **Fase 4** | Subscription Analytics Dashboard | ✅ Completado | Alto (Visibilidad de Negocio) |
 
 ---
 
@@ -73,3 +83,4 @@ Las intervenciones se centraron en tres áreas clave:
 1.  **Tests Automatizados**: Implementar pruebas unitarias (Vitest) para los hooks críticos (`useInventory`, `useAuth`) para prevenir regresiones.
 2.  **Code Splitting**: Aunque se revisó, se recomienda monitorear el tamaño del bundle y configurar `manualChunks` en Vite si la aplicación crece, separando librerías pesadas como recharts o componentes de mapas.
 3.  **Transaccionalidad en Base de Datos**: Mover lógica compleja de validación (ej. duplicidad de lotes) a funciones RPC de Postgres para garantizar integridad a nivel de base de datos.
+4.  **Pagos Reales**: Integrar Stripe o pasarela de pagos para obtener MRR real en lugar de estimado.

@@ -13,6 +13,7 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from '@/components/ui/sidebar';
+import { TowTruckIcon } from '@/components/icons/TowTruckIcon';
 import {
   Truck,
   LayoutDashboard,
@@ -139,7 +140,7 @@ export function AppSidebar() {
             />
           ) : (
             <div className="w-10 h-10 bg-gradient-primary rounded-xl flex items-center justify-center shrink-0">
-              <Truck className="w-5 h-5 text-primary-foreground" />
+              <TowTruckIcon className="w-6 h-6 text-primary-foreground" />
             </div>
           )}
           {!isCollapsed && (

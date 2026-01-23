@@ -59,8 +59,9 @@ export const INVOICE_STATUS_CONFIG: Record<InvoiceStatus, { label: string; color
 // Status configurations - Closure (Simplificado)
 export const CLOSURE_STATUS_CONFIG: Record<ClosureStatus, { label: string; color: string; bgColor: string; textColor: string; icon: string }> = {
   draft: { label: 'Borrador', color: '#6b7280', bgColor: 'bg-gray-100', textColor: 'text-gray-700', icon: '📝' },
-  review: { label: 'Por Aprobar', color: '#f59e0b', bgColor: 'bg-amber-100', textColor: 'text-amber-700', icon: '🔍' },
-  client_review: { label: 'Revisión Cliente', color: '#3b82f6', bgColor: 'bg-blue-100', textColor: 'text-blue-700', icon: '👤' }, // Deprecated in UI
+  review: { label: 'Por Aprobar (Legacy)', color: '#f59e0b', bgColor: 'bg-amber-100', textColor: 'text-amber-700', icon: '🔍' },
+  pending_review: { label: 'Por Aprobar', color: '#f59e0b', bgColor: 'bg-amber-100', textColor: 'text-amber-700', icon: '🔍' },
+  client_review: { label: 'Revisión Cliente', color: '#3b82f6', bgColor: 'bg-blue-100', textColor: 'text-blue-700', icon: '👤' },
   approved: { label: 'Aprobado', color: '#22c55e', bgColor: 'bg-green-100', textColor: 'text-green-700', icon: '✅' },
   closed: { label: 'Cerrado', color: '#0891b2', bgColor: 'bg-cyan-100', textColor: 'text-cyan-700', icon: '🔒' }, // Deprecated in UI
   invoicing: { label: 'Facturando', color: '#8b5cf6', bgColor: 'bg-purple-100', textColor: 'text-purple-700', icon: '📄' }, // Deprecated in UI
@@ -97,9 +98,10 @@ export const PAYMENT_METHODS: Record<PaymentMethod, { label: string; icon: strin
 
 // Workflow transitions - Closure (Simplificado)
 export const CLOSURE_TRANSITIONS: Record<ClosureStatus, ClosureStatus[]> = {
-  draft: ['review', 'cancelled'],
-  review: ['approved', 'draft', 'cancelled'], // "Por Aprobar" -> Aprobado (Skip client_review)
-  client_review: ['approved', 'review', 'cancelled'], // Legacy support
+  draft: ['review', 'pending_review', 'cancelled'],
+  review: ['approved', 'draft', 'cancelled'], // Legacy
+  pending_review: ['approved', 'client_review', 'draft', 'cancelled'],
+  client_review: ['approved', 'pending_review', 'cancelled'],
   approved: ['invoiced', 'cancelled'], // Skip closed/invoicing
   closed: ['invoicing', 'approved', 'cancelled'], // Legacy
   invoicing: ['invoiced', 'closed'], // Legacy

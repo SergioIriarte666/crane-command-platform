@@ -123,7 +123,44 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       });
     }, 12000);
 
-    // Set up auth state listener FIRST
+    // Initial session check
+    const initAuth = async () => {
+      try {
+        const { data: { session: initialSession }, error: sessionError } = await supabase.auth.getSession();
+        
+        if (sessionError) {
+          console.error('[auth] Initial session check failed:', sessionError);
+          safe(() => setLoading(false));
+          return;
+        }
+
+        if (initialSession?.user) {
+          safe(() => {
+            setSession(initialSession);
+            setUser(initialSession.user);
+          });
+          
+          const userData = await withTimeout(
+            fetchUserData(initialSession.user.id),
+            8000,
+            'initial fetchUserData'
+          );
+          
+          if (userData) {
+            safe(() => setAuthUser(userData));
+          }
+        }
+      } catch (err) {
+        console.error('[auth] Init error:', err);
+      } finally {
+        safe(() => setLoading(false));
+      }
+    };
+
+    // Start initialization
+    initAuth();
+
+    // Set up auth state listener
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange(async (event, nextSession) => {
@@ -132,8 +169,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setUser(nextSession?.user ?? null);
       });
 
-      try {
-        if (nextSession?.user) {
+      // If signed out, clear state immediately
+      if (event === 'SIGNED_OUT' || !nextSession?.user) {
+        safe(() => {
+          setAuthUser(null);
+          setLoading(false);
+        });
+        return;
+      }
+
+      // If signed in or token refreshed, fetch fresh data
+      if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED' || event === 'INITIAL_SESSION') {
+        // Avoid double-fetching on initial load since initAuth handles it
+        if (event === 'INITIAL_SESSION') return;
+
+        try {
           const userData = await withTimeout(
             fetchUserData(nextSession.user.id),
             8000,
@@ -142,61 +192,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           
           if (userData) {
             safe(() => setAuthUser(userData));
-          } else {
-            // Fetch returned null (handled error). Check if we can preserve stale data.
-            if (authUserRef.current?.id === nextSession.user.id) {
-              console.warn('[auth] Fetch failed, preserving existing user data for:', nextSession.user.email);
-            } else {
-              safe(() => setAuthUser(null));
-            }
           }
-        } else {
-          safe(() => setAuthUser(null));
+        } catch (err) {
+          console.error(`[auth] Error handling ${event}:`, err);
+        } finally {
+          safe(() => setLoading(false));
         }
-      } catch (error) {
-        console.error('[auth] Error in onAuthStateChange:', error);
-        // On timeout/error, only clear if we don't have matching stale data
-        if (nextSession?.user && authUserRef.current?.id === nextSession.user.id) {
-          console.warn('[auth] Error/Timeout, preserving existing user data');
-        } else {
-          safe(() => setAuthUser(null));
-        }
-      } finally {
-        safe(() => setLoading(false));
       }
     });
 
-    // Fallback: try to read the session, but never block initialization.
-    // Some environments can hang on getSession(); this timeout prevents lock-ups.
-    (async () => {
-      try {
-        const { data, error } = await withTimeout(supabase.auth.getSession(), 4000, 'getSession');
-        if (error) throw error;
-
-        const existingSession = data.session;
-        safe(() => {
-          setSession(existingSession);
-          setUser(existingSession?.user ?? null);
-        });
-
-        if (existingSession?.user) {
-          const userData = await withTimeout(fetchUserData(existingSession.user.id), 8000, 'fetchUserData (getSession)');
-          if (userData) {
-            safe(() => setAuthUser(userData));
-          }
-        }
-      } catch (error) {
-        // Don't clear state here: onAuthStateChange (INITIAL_SESSION) is the source of truth.
-        console.warn('[auth] getSession fallback failed:', error);
-      } finally {
-        // If the listener didn't fire for any reason, this prevents the 12s failsafe delay.
-        safe(() => setLoading(false));
-      }
-    })();
-
     return () => {
       cancelled = true;
-      window.clearTimeout(loadingTimeout);
+      clearTimeout(loadingTimeout);
       subscription.unsubscribe();
     };
   }, []);

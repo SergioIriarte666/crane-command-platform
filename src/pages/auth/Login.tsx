@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Truck, Loader2, Eye, EyeOff } from 'lucide-react';
+import { TowTruckIcon } from '@/components/icons/TowTruckIcon';
 import { useToast } from '@/hooks/use-toast';
 
 export default function Login() {
@@ -50,8 +51,17 @@ export default function Login() {
 
       <Card className="w-full max-w-md relative z-10 glass border-0 shadow-xl">
         <CardHeader className="text-center space-y-4">
-          <div className="mx-auto w-16 h-16 bg-gradient-primary rounded-2xl flex items-center justify-center shadow-colored">
-            <Truck className="w-8 h-8 text-primary-foreground" />
+          <div className="mx-auto flex justify-center">
+            <img 
+              src="/logo.png" 
+              alt="Logo" 
+              className="h-24 w-auto object-contain hover:scale-105 transition-transform duration-300"
+              onError={(e) => {
+                // Fallback to showing the icon if image fails (optional, but good UX)
+                // For now we just hide the broken image
+                // e.currentTarget.style.display = 'none';
+              }}
+            />
           </div>
           <div>
             <CardTitle className="text-2xl font-bold">NTMS</CardTitle>

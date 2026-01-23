@@ -25,13 +25,17 @@ export type ServiceUpdate = Omit<Database['public']['Tables']['services']['Updat
 export const SERVICE_STATUS_CONFIG: Record<string, { label: string; color: string; bgColor: string; textColor: string }> = {
   draft: { label: 'Borrador', color: '#6b7280', bgColor: 'bg-gray-100', textColor: 'text-gray-700' },
   quoted: { label: 'Cotizado', color: '#60a5fa', bgColor: 'bg-blue-100', textColor: 'text-blue-700' },
+  purchase_order_pending: { label: 'Esperando O.C.', color: '#f59e0b', bgColor: 'bg-amber-100', textColor: 'text-amber-700' },
+  with_purchase_order: { label: 'Con Orden de Compra', color: '#10b981', bgColor: 'bg-emerald-100', textColor: 'text-emerald-700' },
   confirmed: { label: 'Confirmado', color: '#3b82f6', bgColor: 'bg-blue-200', textColor: 'text-blue-800' },
+  pending: { label: 'Programado', color: '#8b5cf6', bgColor: 'bg-violet-100', textColor: 'text-violet-700' },
   assigned: { label: 'Asignado', color: '#8b5cf6', bgColor: 'bg-purple-100', textColor: 'text-purple-700' },
   // Simplificado: Operativos fusionados en "En Curso"
   // en_route: { label: 'En Camino', color: '#eab308', bgColor: 'bg-yellow-100', textColor: 'text-yellow-700' },
   // on_site: { label: 'En Sitio', color: '#f97316', bgColor: 'bg-orange-100', textColor: 'text-orange-700' },
   in_progress: { label: 'En Curso', color: '#06b6d4', bgColor: 'bg-cyan-100', textColor: 'text-cyan-700' },
   completed: { label: 'Completado', color: '#22c55e', bgColor: 'bg-green-100', textColor: 'text-green-700' },
+  failed: { label: 'Fallido', color: '#ef4444', bgColor: 'bg-red-100', textColor: 'text-red-700' },
   invoiced: { label: 'Facturado', color: '#15803d', bgColor: 'bg-green-200', textColor: 'text-green-800' },
   cancelled: { label: 'Cancelado', color: '#ef4444', bgColor: 'bg-red-100', textColor: 'text-red-700' },
 };
@@ -68,21 +72,26 @@ export const VEHICLE_CONDITIONS: Record<VehicleCondition, { label: string; descr
 
 // Orden de estados para el pipeline (fallback)
 export const STATUS_ORDER: string[] = [
-  'draft', 'quoted', 'confirmed', 'assigned', 
+  'draft', 'quoted', 'purchase_order_pending', 'with_purchase_order', 
+  'confirmed', 'pending', 'assigned', 
   // 'en_route', 'on_site', 
-  'in_progress', 'completed', 'invoiced', 'cancelled'
+  'in_progress', 'completed', 'failed', 'invoiced', 'cancelled'
 ];
 
 // Transiciones válidas de estado (fallback)
 export const VALID_TRANSITIONS: Record<string, string[]> = {
   draft: ['quoted', 'confirmed', 'cancelled'],
-  quoted: ['confirmed', 'draft', 'cancelled'],
-  confirmed: ['assigned', 'cancelled'],
+  quoted: ['purchase_order_pending', 'with_purchase_order', 'confirmed', 'pending', 'draft', 'cancelled'],
+  purchase_order_pending: ['with_purchase_order', 'confirmed', 'pending', 'cancelled'],
+  with_purchase_order: ['confirmed', 'pending', 'assigned', 'cancelled'],
+  confirmed: ['assigned', 'pending', 'in_progress', 'cancelled'],
+  pending: ['assigned', 'in_progress', 'cancelled'],
   assigned: ['in_progress', 'cancelled'], // Directo a in_progress
   // en_route: ['on_site', 'cancelled'],
   // on_site: ['in_progress', 'cancelled'],
-  in_progress: ['completed', 'cancelled'],
+  in_progress: ['completed', 'failed', 'cancelled'],
   completed: ['invoiced'],
+  failed: ['draft', 'pending', 'cancelled'],
   invoiced: [],
   cancelled: ['draft'],
 };

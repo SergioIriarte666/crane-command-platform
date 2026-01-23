@@ -21,6 +21,7 @@ export type ServiceStatusType =
 export type ClosureStatusType = 
   | 'draft'
   | 'pending_review'
+  | 'client_review'
   | 'approved'
   | 'closed'
   | 'invoicing'
@@ -135,6 +136,13 @@ export const CLOSURE_STATUS_CONFIG: Record<ClosureStatusType, StatusConfig> = {
     bgColor: 'bg-yellow-100',
     textColor: 'text-yellow-700',
     color: '#eab308'
+  },
+  client_review: { 
+    label: 'Revisión Cliente', 
+    className: 'bg-orange-500/80 text-white',
+    bgColor: 'bg-orange-100',
+    textColor: 'text-orange-700',
+    color: '#f97316'
   },
   approved: { 
     label: 'Aprobado', 
