@@ -102,7 +102,7 @@ export function InventoryMovementModal({ isOpen, onClose, item: initialItem }: I
 
     try {
       let finalReferenceType = values.reference_type;
-      let finalReferenceId = values.reference_id;
+      const finalReferenceId = values.reference_id;
       let finalNotes = values.notes;
       let finalQuantity = Number(values.quantity);
       let batchId = values.batch_id === 'none' ? undefined : values.batch_id;

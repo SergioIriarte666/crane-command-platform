@@ -99,7 +99,7 @@ export function CostsTable({
 
   // Sort Logic (Client-side, as data is already filtered by parent)
   const sortedCosts = useMemo(() => {
-    let result = [...costs];
+    const result = [...costs];
 
     result.sort((a, b) => {
       let aValue: any;

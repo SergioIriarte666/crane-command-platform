@@ -46,7 +46,7 @@ export const addCompanyHeader = async (
   logoUrl?: string
 ): Promise<number> => {
   const pageWidth = doc.internal.pageSize.width;
-  let yPosition = startY;
+  const yPosition = startY;
 
   // Logo de la empresa (desde DB o fallback)
   try {

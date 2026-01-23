@@ -39,7 +39,7 @@ export function useServiceCommissionsLedger(filters?: ServiceCommissionLedgerFil
     queryFn: async (): Promise<ServiceCommissionLedgerRow[]> => {
       if (!tenantId) return [];
 
-      let qb = supabase
+      const qb = supabase
         .from('service_operators')
         .select(
           `

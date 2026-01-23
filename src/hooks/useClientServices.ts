@@ -105,7 +105,7 @@ export function useUpdateServicesBatch() {
       for (let index = 0; index < serviceIds.length; index++) {
         const serviceId = serviceIds[index];
         
-        let updateFields = { ...fields };
+        const updateFields = { ...fields };
         
         // Handle appending observations
         if (appendObservations && fields.observations) {

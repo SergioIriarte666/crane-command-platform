@@ -110,7 +110,7 @@ export function ImportBankStatementDialog({
 
     const parsed: ParsedRow[] = rawData.map((row) => {
       try {
-        let dateValue = row[dateIdx];
+        const dateValue = row[dateIdx];
         let parsedDate: Date;
         
         if (typeof dateValue === 'number') {

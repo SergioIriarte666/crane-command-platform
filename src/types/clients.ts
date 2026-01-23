@@ -127,7 +127,7 @@ export const TAX_CONFIG = {
 // Formato de RUT chileno
 export const formatRUT = (rut: string): string => {
   // Eliminar puntos y guión
-  let value = rut.replace(/\./g, '').replace(/-/g, '');
+  const value = rut.replace(/\./g, '').replace(/-/g, '');
   
   if (value.length < 2) return value;
   

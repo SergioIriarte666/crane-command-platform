@@ -76,7 +76,7 @@ export class DataMapper {
 
     // Find crane by plates or unit number
     const cranePlate = String(row.craneLicensePlate || '').trim().toUpperCase();
-    let crane = this.referenceData.cranes.find(
+    const crane = this.referenceData.cranes.find(
       c => c.plates?.toUpperCase() === cranePlate || 
            c.unit_number.toUpperCase() === cranePlate
     );
