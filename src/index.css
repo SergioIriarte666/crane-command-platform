@@ -5,6 +5,14 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Ocultar elementos de Lovable */
+[class*="lovable"], [id*="lovable"], a[href*="lovable.dev"] {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
+
 /* ===========================================
    NTMS - Sistema de Gestión de Grúas
    Design System - Premium Business Style
