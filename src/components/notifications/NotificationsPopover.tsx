@@ -12,7 +12,8 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Bell, Check, Trash2, Info, AlertTriangle, XCircle, CheckCircle } from 'lucide-react';
-import { useNotificationsContext, NotificationType } from '@/contexts/NotificationsContext';
+import { useNotifications } from '@/contexts/NotificationsContext';
+import { NotificationType } from '@/types/notifications';
 import { formatDistanceToNow } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
@@ -24,7 +25,7 @@ export function NotificationsPopover() {
     markAsRead, 
     markAllAsRead, 
     deleteNotification 
-  } = useNotificationsContext();
+  } = useNotifications();
 
   const getIcon = (type: NotificationType) => {
     switch (type) {
