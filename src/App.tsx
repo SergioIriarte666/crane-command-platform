@@ -69,6 +69,9 @@ import ReportsPage from "@/pages/reports/ReportsPage";
 // Settings
 import SettingsPage from "@/pages/settings/SettingsPage";
 
+// Notifications
+import NotificationsPage from "@/pages/notifications/NotificationsPage";
+
 // Profile
 import ProfilePage from "@/pages/profile/ProfilePage";
 
@@ -160,8 +163,8 @@ const App = () => (
               {/* Profile */}
               <Route path="/perfil" element={<ProfilePage />} />
               
-              {/* Placeholder routes */}
-              <Route path="/notificaciones" element={<ComingSoon title="Notificaciones" />} />
+              {/* Notifications */}
+              <Route path="/notificaciones" element={<NotificationsPage />} />
               <Route path="/admin/tenants" element={<TenantsAdminPage />} />
               
               {/* VIP Pipeline */}
