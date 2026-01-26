@@ -29,10 +29,19 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog';
-import { useTenantUsers, useUpdateUserRole, useToggleUserStatus, roleDescriptions } from '@/hooks/useSettings';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { Checkbox } from '@/components/ui/checkbox';
+import { useTenantUsers, useUpdateUserRole, useToggleUserStatus, useResetPassword, useAdminCreateUser, roleDescriptions } from '@/hooks/useSettings';
 import { usePendingInvitations, useCreateInvitation, useDeleteInvitation, useResendInvitation } from '@/hooks/useInvitations';
 import { usePlanLimits } from '@/hooks/usePlanLimits';
-import { Loader2, Search, UserPlus, Users, Phone, Clock, Trash2, RefreshCw, Copy, Check, Link2 } from 'lucide-react';
+import { Loader2, Search, UserPlus, Users, Phone, Clock, Trash2, RefreshCw, Copy, Check, Link2, MoreVertical, Key, UserCheck } from 'lucide-react';
 import { format, formatDistanceToNow } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { Label } from '@/components/ui/label';
@@ -46,6 +55,8 @@ export function UsersSettings() {
   const { data: pendingInvitations, isLoading: invitationsLoading } = usePendingInvitations();
   const updateRole = useUpdateUserRole();
   const toggleStatus = useToggleUserStatus();
+  const resetPassword = useResetPassword();
+  const adminCreateUser = useAdminCreateUser();
   const createInvitation = useCreateInvitation();
   const deleteInvitation = useDeleteInvitation();
   const resendInvitation = useResendInvitation();
@@ -54,6 +65,16 @@ export function UsersSettings() {
   const [inviteDialogOpen, setInviteDialogOpen] = useState(false);
   const [inviteEmail, setInviteEmail] = useState('');
   const [inviteRole, setInviteRole] = useState<AppRole>('dispatcher');
+  
+  // Manual Create User State
+  const [createDialogOpen, setCreateDialogOpen] = useState(false);
+  const [createFullName, setCreateFullName] = useState('');
+  const [createEmail, setCreateEmail] = useState('');
+  const [createRole, setCreateRole] = useState<AppRole>('operator');
+  const [createMustChangePassword, setCreateMustChangePassword] = useState(true);
+  const [successDialogOpen, setSuccessDialogOpen] = useState(false);
+  const [createdUserCredentials, setCreatedUserCredentials] = useState<{email: string, password: string} | null>(null);
+
   const [copiedToken, setCopiedToken] = useState<string | null>(null);
 
   const filteredUsers = users?.filter((user) =>
@@ -67,6 +88,44 @@ export function UsersSettings() {
 
   const handleStatusToggle = (userId: string, currentStatus: boolean | null) => {
     toggleStatus.mutate({ userId, isActive: !currentStatus });
+  };
+
+  const handleResetPassword = (email: string) => {
+    if (confirm(`¿Estás seguro de enviar un correo de restablecimiento de contraseña a ${email}?`)) {
+      resetPassword.mutate(email);
+    }
+  };
+
+  const handleCreateUser = async () => {
+    if (!createEmail || !createFullName) {
+      toast.error('Todos los campos son obligatorios');
+      return;
+    }
+
+    try {
+      const result = await adminCreateUser.mutateAsync({
+        email: createEmail,
+        fullName: createFullName,
+        role: createRole,
+        mustChangePassword: createMustChangePassword
+      });
+      
+      setCreatedUserCredentials({
+        email: createEmail,
+        password: result.tempPassword
+      });
+      setSuccessDialogOpen(true);
+      setCreateDialogOpen(false);
+      
+      // Reset form
+      setCreateFullName('');
+      setCreateEmail('');
+      setCreateRole('operator');
+      setCreateMustChangePassword(true);
+      
+    } catch (error) {
+      // Error handled in hook
+    }
   };
 
   const handleInviteUser = async () => {
@@ -147,63 +206,143 @@ export function UsersSettings() {
               </div>
             </div>
             {canCreateUser ? (
-              <Dialog open={inviteDialogOpen} onOpenChange={setInviteDialogOpen}>
-                <DialogTrigger asChild>
-                  <Button>
-                    <UserPlus className="h-4 w-4 mr-2" />
-                    Invitar Usuario
-                  </Button>
-                </DialogTrigger>
-                <DialogContent>
-                  <DialogHeader>
-                    <DialogTitle>Invitar Nuevo Usuario</DialogTitle>
-                    <DialogDescription>
-                      Se generará un enlace de invitación para que el usuario se registre
-                    </DialogDescription>
-                  </DialogHeader>
-                  <div className="space-y-4 py-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="invite-email">Email</Label>
-                      <Input
-                        id="invite-email"
-                        type="email"
-                        placeholder="usuario@ejemplo.com"
-                        value={inviteEmail}
-                        onChange={(e) => setInviteEmail(e.target.value)}
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="invite-role">Rol</Label>
-                      <Select value={inviteRole} onValueChange={(v) => setInviteRole(v as AppRole)}>
-                        <SelectTrigger>
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="admin">Administrador</SelectItem>
-                          <SelectItem value="dispatcher">Despachador</SelectItem>
-                          <SelectItem value="operator">Operador</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  </div>
-                  <DialogFooter>
-                    <Button variant="outline" onClick={() => setInviteDialogOpen(false)}>
-                      Cancelar
+              <div className="flex gap-2">
+                <Dialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>
+                  <DialogTrigger asChild>
+                    <Button variant="outline">
+                      <UserCheck className="h-4 w-4 mr-2" />
+                      Crear Manualmente
                     </Button>
-                    <Button 
-                      onClick={handleInviteUser}
-                      disabled={createInvitation.isPending}
-                    >
-                      {createInvitation.isPending ? (
-                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                      ) : (
-                        <Link2 className="h-4 w-4 mr-2" />
-                      )}
-                      Crear Invitación
+                  </DialogTrigger>
+                  <DialogContent>
+                    <DialogHeader>
+                      <DialogTitle>Crear Nuevo Usuario</DialogTitle>
+                      <DialogDescription>
+                        Crea un usuario directamente y obtén una contraseña temporal.
+                      </DialogDescription>
+                    </DialogHeader>
+                    <div className="space-y-4 py-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="create-fullname">Nombre Completo</Label>
+                        <Input
+                          id="create-fullname"
+                          placeholder="Juan Pérez"
+                          value={createFullName}
+                          onChange={(e) => setCreateFullName(e.target.value)}
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="create-email">Email</Label>
+                        <Input
+                          id="create-email"
+                          type="email"
+                          placeholder="usuario@ejemplo.com"
+                          value={createEmail}
+                          onChange={(e) => setCreateEmail(e.target.value)}
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="create-role">Rol</Label>
+                        <Select value={createRole} onValueChange={(v) => setCreateRole(v as AppRole)}>
+                          <SelectTrigger>
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="admin">Administrador</SelectItem>
+                            <SelectItem value="dispatcher">Despachador</SelectItem>
+                            <SelectItem value="operator">Operador</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div className="flex items-center space-x-2 pt-2">
+                        <Checkbox 
+                          id="must-change-password" 
+                          checked={createMustChangePassword}
+                          onCheckedChange={(checked) => setCreateMustChangePassword(checked as boolean)}
+                        />
+                        <Label 
+                          htmlFor="must-change-password" 
+                          className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                        >
+                          Obligar cambio de contraseña en primer inicio
+                        </Label>
+                      </div>
+                    </div>
+                    <DialogFooter>
+                      <Button variant="outline" onClick={() => setCreateDialogOpen(false)}>
+                        Cancelar
+                      </Button>
+                      <Button 
+                        onClick={handleCreateUser}
+                        disabled={adminCreateUser.isPending}
+                      >
+                        {adminCreateUser.isPending && (
+                          <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                        )}
+                        Crear Usuario
+                      </Button>
+                    </DialogFooter>
+                  </DialogContent>
+                </Dialog>
+
+                <Dialog open={inviteDialogOpen} onOpenChange={setInviteDialogOpen}>
+                  <DialogTrigger asChild>
+                    <Button>
+                      <UserPlus className="h-4 w-4 mr-2" />
+                      Invitar Usuario
                     </Button>
-                  </DialogFooter>
-                </DialogContent>
-              </Dialog>
+                  </DialogTrigger>
+                  <DialogContent>
+                    <DialogHeader>
+                      <DialogTitle>Invitar Nuevo Usuario</DialogTitle>
+                      <DialogDescription>
+                        Se generará un enlace de invitación para que el usuario se registre
+                      </DialogDescription>
+                    </DialogHeader>
+                    <div className="space-y-4 py-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="invite-email">Email</Label>
+                        <Input
+                          id="invite-email"
+                          type="email"
+                          placeholder="usuario@ejemplo.com"
+                          value={inviteEmail}
+                          onChange={(e) => setInviteEmail(e.target.value)}
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="invite-role">Rol</Label>
+                        <Select value={inviteRole} onValueChange={(v) => setInviteRole(v as AppRole)}>
+                          <SelectTrigger>
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="admin">Administrador</SelectItem>
+                            <SelectItem value="dispatcher">Despachador</SelectItem>
+                            <SelectItem value="operator">Operador</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+                    <DialogFooter>
+                      <Button variant="outline" onClick={() => setInviteDialogOpen(false)}>
+                        Cancelar
+                      </Button>
+                      <Button 
+                        onClick={handleInviteUser}
+                        disabled={createInvitation.isPending}
+                      >
+                        {createInvitation.isPending ? (
+                          <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                        ) : (
+                          <Link2 className="h-4 w-4 mr-2" />
+                        )}
+                        Crear Invitación
+                      </Button>
+                    </DialogFooter>
+                  </DialogContent>
+                </Dialog>
+              </div>
             ) : (
               <Button disabled variant="outline">
                 <UserPlus className="h-4 w-4 mr-2" />
@@ -243,6 +382,7 @@ export function UsersSettings() {
                       <TableHead>Rol</TableHead>
                       <TableHead>Estado</TableHead>
                       <TableHead>Registro</TableHead>
+                      <TableHead className="text-right">Acciones</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -309,12 +449,29 @@ export function UsersSettings() {
                               ? format(new Date(user.created_at), 'dd MMM yyyy', { locale: es })
                               : '-'}
                           </TableCell>
+                          <TableCell className="text-right">
+                            <DropdownMenu>
+                              <DropdownMenuTrigger asChild>
+                                <Button variant="ghost" className="h-8 w-8 p-0">
+                                  <MoreVertical className="h-4 w-4" />
+                                </Button>
+                              </DropdownMenuTrigger>
+                              <DropdownMenuContent align="end">
+                                <DropdownMenuLabel>Acciones</DropdownMenuLabel>
+                                <DropdownMenuSeparator />
+                                <DropdownMenuItem onClick={() => handleResetPassword(user.email)}>
+                                  <Key className="mr-2 h-4 w-4" />
+                                  Restablecer contraseña
+                                </DropdownMenuItem>
+                              </DropdownMenuContent>
+                            </DropdownMenu>
+                          </TableCell>
                         </TableRow>
                       );
                     })}
                     {filteredUsers?.length === 0 && (
                       <TableRow>
-                        <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">
+                        <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
                           No se encontraron usuarios
                         </TableCell>
                       </TableRow>
@@ -408,6 +565,48 @@ export function UsersSettings() {
           </Tabs>
         </CardContent>
       </Card>
+
+      <Dialog open={successDialogOpen} onOpenChange={setSuccessDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Usuario Creado Exitosamente</DialogTitle>
+            <DialogDescription>
+              El usuario ha sido creado. Por favor, copia la contraseña temporal y envíala al usuario.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="p-4 bg-muted rounded-md space-y-4">
+            <div>
+              <Label className="text-xs text-muted-foreground">Email</Label>
+              <div className="font-medium">{createdUserCredentials?.email}</div>
+            </div>
+            <div>
+              <Label className="text-xs text-muted-foreground">Contraseña Temporal</Label>
+              <div className="flex items-center gap-2 mt-1">
+                <code className="bg-background px-2 py-1 rounded border font-mono flex-1">
+                  {createdUserCredentials?.password}
+                </code>
+                <Button
+                  size="icon"
+                  variant="ghost"
+                  onClick={() => {
+                    if (createdUserCredentials?.password) {
+                      navigator.clipboard.writeText(createdUserCredentials.password);
+                      toast.success('Contraseña copiada');
+                    }
+                  }}
+                >
+                  <Copy className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button onClick={() => setSuccessDialogOpen(false)}>
+              Cerrar
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

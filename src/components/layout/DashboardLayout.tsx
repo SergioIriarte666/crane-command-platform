@@ -40,6 +40,11 @@ export default function DashboardLayout() {
     return <Navigate to="/auth/login" replace />;
   }
 
+  // Check if user must change password
+  if (authUser?.profile?.must_change_password) {
+    return <Navigate to="/auth/change-password" replace />;
+  }
+
   // Check if user has a tenant assigned (or is super_admin)
   // Use profile.tenant_id as source of truth (it's always set), 
   // authUser.tenant is optional enrichment that may fail

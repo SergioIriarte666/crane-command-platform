@@ -16,6 +16,7 @@ import Login from "@/pages/auth/Login";
 import Register from "@/pages/auth/Register";
 import Onboarding from "@/pages/auth/Onboarding";
 import InvitationAccept from "@/pages/auth/InvitationAccept";
+import ChangePassword from "@/pages/auth/ChangePassword";
 
 // Main Pages
 import Dashboard from "@/pages/Dashboard";
@@ -93,6 +94,7 @@ const App = () => (
             {/* Onboarding disabled - only super admin creates tenants */}
             <Route path="/auth/onboarding" element={<Onboarding />} />
             <Route path="/auth/invitation/:token" element={<InvitationAccept />} />
+            <Route path="/auth/change-password" element={<ChangePassword />} />
 
             {/* Protected Routes */}
             <Route element={<DashboardLayout />}>
