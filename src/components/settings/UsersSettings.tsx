@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -41,7 +41,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { useTenantUsers, useUpdateUserRole, useToggleUserStatus, useResetPassword, useAdminCreateUser, roleDescriptions } from '@/hooks/useSettings';
 import { usePendingInvitations, useCreateInvitation, useDeleteInvitation, useResendInvitation } from '@/hooks/useInvitations';
 import { usePlanLimits } from '@/hooks/usePlanLimits';
-import { Loader2, Search, UserPlus, Users, Phone, Clock, Trash2, RefreshCw, Copy, Check, Link2, MoreVertical, Key, UserCheck } from 'lucide-react';
+import { Loader2, Search, UserPlus, Users, Phone, Clock, Trash2, RefreshCw, Copy, Check, Link2, MoreVertical, Key, UserCheck, ChevronDown, ChevronRight } from 'lucide-react';
 import { format, formatDistanceToNow } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { Label } from '@/components/ui/label';
@@ -81,6 +81,35 @@ export function UsersSettings() {
     user.full_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
     user.email.toLowerCase().includes(searchTerm.toLowerCase())
   );
+
+  const [collapsedGroups, setCollapsedGroups] = useState<Record<string, boolean>>(() => {
+    try {
+      const saved = sessionStorage.getItem('usersSettings_collapsedGroups');
+      return saved ? JSON.parse(saved) : {};
+    } catch {
+      return {};
+    }
+  });
+
+  useEffect(() => {
+    sessionStorage.setItem('usersSettings_collapsedGroups', JSON.stringify(collapsedGroups));
+  }, [collapsedGroups]);
+
+  const toggleGroup = (groupName: string) => {
+    setCollapsedGroups(prev => ({
+      ...prev,
+      [groupName]: !prev[groupName]
+    }));
+  };
+
+  const groupedUsers = filteredUsers?.reduce((groups, user) => {
+    const tenantName = user.tenants?.name || 'Empresa Principal';
+    if (!groups[tenantName]) {
+      groups[tenantName] = [];
+    }
+    groups[tenantName].push(user);
+    return groups;
+  }, {} as Record<string, typeof filteredUsers>);
 
   const handleRoleChange = (userId: string, role: string) => {
     updateRole.mutate({ userId, role });
@@ -386,90 +415,114 @@ export function UsersSettings() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {filteredUsers?.map((user) => {
-                      const role = getUserRole(user);
-                      const roleInfo = roleDescriptions[role as keyof typeof roleDescriptions];
-                      
-                      return (
-                        <TableRow key={user.id}>
-                          <TableCell>
-                            <div className="flex items-center gap-3">
-                              <Avatar className="h-9 w-9">
-                                <AvatarImage src={user.avatar_url || undefined} />
-                                <AvatarFallback className="bg-primary/10 text-primary">
-                                  {getInitials(user.full_name)}
-                                </AvatarFallback>
-                              </Avatar>
-                              <div>
-                                <p className="font-medium">{user.full_name || 'Sin nombre'}</p>
-                                <p className="text-sm text-muted-foreground">{user.email}</p>
-                              </div>
-                            </div>
-                          </TableCell>
-                          <TableCell>
-                            {user.phone && (
-                              <div className="flex items-center gap-1 text-sm text-muted-foreground">
-                                <Phone className="h-3 w-3" />
-                                {user.phone}
-                              </div>
-                            )}
-                          </TableCell>
-                          <TableCell>
-                            <Select
-                              value={role}
-                              onValueChange={(value) => handleRoleChange(user.id, value)}
-                            >
-                              <SelectTrigger className="w-[140px]">
-                                <SelectValue>
-                                  <Badge className={roleInfo?.color}>
-                                    {roleInfo?.label || role}
-                                  </Badge>
-                                </SelectValue>
-                              </SelectTrigger>
-                              <SelectContent>
-                                <SelectItem value="admin">Administrador</SelectItem>
-                                <SelectItem value="dispatcher">Despachador</SelectItem>
-                                <SelectItem value="operator">Operador</SelectItem>
-                              </SelectContent>
-                            </Select>
-                          </TableCell>
-                          <TableCell>
-                            <div className="flex items-center gap-2">
-                              <Switch
-                                checked={user.is_active ?? true}
-                                onCheckedChange={() => handleStatusToggle(user.id, user.is_active)}
-                              />
-                              <span className="text-sm">
-                                {user.is_active ? 'Activo' : 'Inactivo'}
+                    {groupedUsers && Object.entries(groupedUsers).map(([tenantName, groupUsers]) => (
+                      <>
+                        <TableRow 
+                          key={`group-${tenantName}`}
+                          className="bg-muted/30 hover:bg-muted/50 cursor-pointer"
+                          onClick={() => toggleGroup(tenantName)}
+                        >
+                          <TableCell colSpan={6} className="py-2">
+                            <div className="flex items-center font-semibold text-sm">
+                              {collapsedGroups[tenantName] ? (
+                                <ChevronRight className="h-4 w-4 mr-2 text-muted-foreground" />
+                              ) : (
+                                <ChevronDown className="h-4 w-4 mr-2 text-muted-foreground" />
+                              )}
+                              {tenantName} 
+                              <span className="ml-2 text-muted-foreground font-normal text-xs">
+                                ({groupUsers?.length || 0} usuarios)
                               </span>
                             </div>
                           </TableCell>
-                          <TableCell className="text-muted-foreground">
-                            {user.created_at
-                              ? format(new Date(user.created_at), 'dd MMM yyyy', { locale: es })
-                              : '-'}
-                          </TableCell>
-                          <TableCell className="text-right">
-                            <DropdownMenu>
-                              <DropdownMenuTrigger asChild>
-                                <Button variant="ghost" className="h-8 w-8 p-0">
-                                  <MoreVertical className="h-4 w-4" />
-                                </Button>
-                              </DropdownMenuTrigger>
-                              <DropdownMenuContent align="end">
-                                <DropdownMenuLabel>Acciones</DropdownMenuLabel>
-                                <DropdownMenuSeparator />
-                                <DropdownMenuItem onClick={() => handleResetPassword(user.email)}>
-                                  <Key className="mr-2 h-4 w-4" />
-                                  Restablecer contraseña
-                                </DropdownMenuItem>
-                              </DropdownMenuContent>
-                            </DropdownMenu>
-                          </TableCell>
                         </TableRow>
-                      );
-                    })}
-                    {filteredUsers?.length === 0 && (
+                        
+                        {!collapsedGroups[tenantName] && groupUsers?.map((user) => {
+                          const role = getUserRole(user);
+                          const roleInfo = roleDescriptions[role as keyof typeof roleDescriptions];
+                          
+                          return (
+                            <TableRow key={user.id}>
+                              <TableCell>
+                                <div className="flex items-center gap-3">
+                                  <Avatar className="h-9 w-9">
+                                    <AvatarImage src={user.avatar_url || undefined} />
+                                    <AvatarFallback className="bg-primary/10 text-primary">
+                                      {getInitials(user.full_name)}
+                                    </AvatarFallback>
+                                  </Avatar>
+                                  <div>
+                                    <p className="font-medium">{user.full_name || 'Sin nombre'}</p>
+                                    <p className="text-sm text-muted-foreground">{user.email}</p>
+                                  </div>
+                                </div>
+                              </TableCell>
+                              <TableCell>
+                                {user.phone && (
+                                  <div className="flex items-center gap-1 text-sm text-muted-foreground">
+                                    <Phone className="h-3 w-3" />
+                                    {user.phone}
+                                  </div>
+                                )}
+                              </TableCell>
+                              <TableCell>
+                                <Select
+                                  value={role}
+                                  onValueChange={(value) => handleRoleChange(user.id, value)}
+                                >
+                                  <SelectTrigger className="w-[140px]">
+                                    <SelectValue>
+                                      <Badge className={roleInfo?.color}>
+                                        {roleInfo?.label || role}
+                                      </Badge>
+                                    </SelectValue>
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    <SelectItem value="admin">Administrador</SelectItem>
+                                    <SelectItem value="dispatcher">Despachador</SelectItem>
+                                    <SelectItem value="operator">Operador</SelectItem>
+                                  </SelectContent>
+                                </Select>
+                              </TableCell>
+                              <TableCell>
+                                <div className="flex items-center gap-2">
+                                  <Switch
+                                    checked={user.is_active ?? true}
+                                    onCheckedChange={() => handleStatusToggle(user.id, user.is_active)}
+                                  />
+                                  <span className="text-sm">
+                                    {user.is_active ? 'Activo' : 'Inactivo'}
+                                  </span>
+                                </div>
+                              </TableCell>
+                              <TableCell className="text-muted-foreground">
+                                {user.created_at
+                                  ? format(new Date(user.created_at), 'dd MMM yyyy', { locale: es })
+                                  : '-'}
+                              </TableCell>
+                              <TableCell className="text-right">
+                                <DropdownMenu>
+                                  <DropdownMenuTrigger asChild>
+                                    <Button variant="ghost" className="h-8 w-8 p-0">
+                                      <MoreVertical className="h-4 w-4" />
+                                    </Button>
+                                  </DropdownMenuTrigger>
+                                  <DropdownMenuContent align="end">
+                                    <DropdownMenuLabel>Acciones</DropdownMenuLabel>
+                                    <DropdownMenuSeparator />
+                                    <DropdownMenuItem onClick={() => handleResetPassword(user.email)}>
+                                      <Key className="mr-2 h-4 w-4" />
+                                      Restablecer contraseña
+                                    </DropdownMenuItem>
+                                  </DropdownMenuContent>
+                                </DropdownMenu>
+                              </TableCell>
+                            </TableRow>
+                          );
+                        })}
+                      </>
+                    ))}
+                    {(!filteredUsers || filteredUsers.length === 0) && (
                       <TableRow>
                         <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
                           No se encontraron usuarios

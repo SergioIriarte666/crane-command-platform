@@ -67,7 +67,7 @@ export function useTenantUsers() {
       // Fetch profiles
       let query = supabase
         .from('profiles')
-        .select('*')
+        .select('*, tenants(name)')
         .order('created_at', { ascending: false });
 
       // If tenant exists, filter by it. If not (and isSuperAdmin), fetch all.
@@ -101,7 +101,7 @@ export function useTenantUsers() {
       return profiles.map(profile => ({
         ...profile,
         user_roles: roles?.filter(r => r.user_id === profile.id) || [],
-      })) as (Profile & { user_roles: UserRole[] })[];
+      })) as (Profile & { user_roles: UserRole[], tenants: { name: string } | null })[];
     },
     enabled: !!authUser?.tenant?.id || isSuperAdmin(),
   });
