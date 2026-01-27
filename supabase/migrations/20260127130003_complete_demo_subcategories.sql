@@ -140,6 +140,7 @@ BEGIN
         -- Note: These are usually created by a trigger or initial migration for existing tenants, 
         -- but for the demo tenant created via seed, they might be missing if the seed didn't include them.
         
+        /* 
         INSERT INTO public.service_pipeline_stages (tenant_id, status, name, color, sort_order)
         VALUES 
             (v_tenant_id, 'draft', 'Borrador', '#6b7280', 0),
@@ -160,6 +161,7 @@ BEGIN
             name = EXCLUDED.name,
             color = EXCLUDED.color,
             sort_order = EXCLUDED.sort_order;
+        */
 
     END IF;
 END $$;

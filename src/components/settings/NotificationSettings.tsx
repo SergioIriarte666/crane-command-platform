@@ -5,7 +5,7 @@ import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Bell, Mail, Smartphone, Save, Loader2, AppWindow } from 'lucide-react';
+import { Bell, Mail, Smartphone, Save, Loader2, AppWindow, MessageSquare } from 'lucide-react';
 import { useNotifications } from '@/contexts/NotificationsContext';
 import { toast } from 'sonner';
 
@@ -78,7 +78,8 @@ export function NotificationSettings() {
         mergedSettings[type.id] = preferences.settings[type.id] || {
           email: true,
           push: true,
-          in_app: true
+          in_app: true,
+          whatsapp: true // Default to true
         };
       });
       setSettings(mergedSettings);
@@ -90,7 +91,7 @@ export function NotificationSettings() {
         // Initialize defaults if no prefs exist yet
         const defaults: Record<string, any> = {};
         notificationTypes.forEach(type => {
-            defaults[type.id] = { email: true, push: true, in_app: true };
+            defaults[type.id] = { email: true, push: true, in_app: true, whatsapp: true };
         });
         setSettings(defaults);
     }
@@ -98,7 +99,7 @@ export function NotificationSettings() {
 
   const handleToggle = (
     typeId: string,
-    channel: 'email' | 'push' | 'in_app',
+    channel: 'email' | 'push' | 'in_app' | 'whatsapp',
     value: boolean
   ) => {
     setSettings((prev) => ({
@@ -150,7 +151,7 @@ export function NotificationSettings() {
         <CardContent>
           <div className="space-y-6">
             {/* Header row */}
-            <div className="grid grid-cols-[1fr,80px,80px,80px] gap-4 items-center pb-4 border-b">
+            <div className="grid grid-cols-[1fr,80px,80px,80px,80px] gap-4 items-center pb-4 border-b">
               <div className="font-medium">Notificación</div>
               <div className="text-center">
                 <Mail className="h-4 w-4 mx-auto text-muted-foreground mb-1" />
@@ -164,13 +165,17 @@ export function NotificationSettings() {
                 <AppWindow className="h-4 w-4 mx-auto text-muted-foreground mb-1" />
                 <span className="text-xs text-muted-foreground">In-App</span>
               </div>
+              <div className="text-center">
+                <MessageSquare className="h-4 w-4 mx-auto text-muted-foreground mb-1" />
+                <span className="text-xs text-muted-foreground">WhatsApp</span>
+              </div>
             </div>
 
             {/* Settings rows */}
             {notificationTypes.map((type) => (
               <div
                 key={type.id}
-                className="grid grid-cols-[1fr,80px,80px,80px] gap-4 items-center py-2"
+                className="grid grid-cols-[1fr,80px,80px,80px,80px] gap-4 items-center py-2"
               >
                 <div>
                   <div className="font-medium text-sm">{type.label}</div>
@@ -199,6 +204,14 @@ export function NotificationSettings() {
                     checked={settings[type.id]?.in_app ?? true}
                     onCheckedChange={(checked) =>
                       handleToggle(type.id, 'in_app', checked)
+                    }
+                  />
+                </div>
+                <div className="flex justify-center">
+                  <Switch
+                    checked={settings[type.id]?.whatsapp ?? true}
+                    onCheckedChange={(checked) =>
+                      handleToggle(type.id, 'whatsapp', checked)
                     }
                   />
                 </div>
