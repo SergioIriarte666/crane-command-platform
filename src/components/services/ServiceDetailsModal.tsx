@@ -29,6 +29,7 @@ import {
   Timer,
   Route,
   Shield,
+  Send,
 } from 'lucide-react';
 import { Service, SERVICE_STATUS_CONFIG, SERVICE_TYPES, VEHICLE_CONDITIONS } from '@/types/services';
 import { useEnhancedServiceDetails } from '@/hooks/useEnhancedServiceDetails';
@@ -43,6 +44,7 @@ import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { addCompanyHeader, addPageNumbers, mapTenantToCompanyInfo, safeDateFormat, safeCurrencyFormat } from '@/lib/pdfUtils';
 import { useTenant } from '@/hooks/useSettings';
+import { supabase } from '@/integrations/supabase/client';
 
 import { Loader2 } from 'lucide-react';
 
@@ -104,11 +106,32 @@ export function ServiceDetailsModal({
   onDuplicate 
 }: ServiceDetailsModalProps) {
   const [activeTab, setActiveTab] = useState('general');
+  const [isResending, setIsResending] = useState(false);
   const resolvedId = serviceId || initialService?.id || null;
   const { data: details, isLoading, isError } = useEnhancedServiceDetails(resolvedId);
   const { data: tenant } = useTenant();
 
   const service = initialService || details?.service;
+
+  const handleResendNotification = async () => {
+    if (!service) return;
+    
+    setIsResending(true);
+    try {
+      // @ts-ignore - Function exists in DB but types not updated yet
+      const { error } = await supabase.rpc('manual_notify_service_assignment_by_folio', {
+        service_folio: service.folio
+      });
+
+      if (error) throw error;
+      toast.success('Notificación reenviada correctamente');
+    } catch (error: any) {
+      console.error('Error resending notification:', error);
+      toast.error('Error al reenviar la notificación: ' + error.message);
+    } finally {
+      setIsResending(false);
+    }
+  };
 
   const handleDownloadPDF = async () => {
     try {
@@ -306,6 +329,19 @@ export function ServiceDetailsModal({
               </Badge>
             </div>
             <div className="flex items-center gap-2">
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={handleResendNotification}
+                disabled={isResending}
+              >
+                {isResending ? (
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                ) : (
+                  <Send className="w-4 h-4 mr-2" />
+                )}
+                Reenviar
+              </Button>
               {onDuplicate && (
                 <Button variant="outline" size="sm" onClick={handleDuplicate}>
                   <Copy className="w-4 h-4 mr-2" />

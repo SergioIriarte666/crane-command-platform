@@ -1,6 +1,10 @@
--- SOLUCIÓN COMPLETA V2: Personalización del Mensaje de WhatsApp (Incluye Teléfono del Cliente)
+-- SOLUCIÓN A MENSAJES DUPLICADOS
+-- 1. Eliminar triggers antiguos que causan notificaciones duplicadas (Formato antiguo y disparos múltiples)
+DROP TRIGGER IF EXISTS on_service_created ON public.services; -- Culpable del mensaje formato antiguo
+DROP TRIGGER IF EXISTS trigger_notify_service_assignment ON public.service_operators; -- Posible duplicado si se usa esta tabla
+DROP TRIGGER IF EXISTS notify_service_assignment ON public.services; -- Limpieza general
 
--- 1. Actualizar la función del Trigger con los nuevos campos
+-- 2. Actualizar la función principal con lógica de DEDUPLICACIÓN robusta
 CREATE OR REPLACE FUNCTION public.handle_new_service_assignment()
 RETURNS TRIGGER
 LANGUAGE plpgsql
@@ -12,7 +16,7 @@ DECLARE
     v_operator_id UUID;
     v_service_folio TEXT;
     v_service_client_name TEXT;
-    v_client_phone TEXT;  -- NUEVA VARIABLE PARA TELÉFONO DEL CLIENTE
+    v_client_phone TEXT;
     v_service_origin TEXT;
     v_service_destination TEXT;
     v_service_date TIMESTAMP WITH TIME ZONE;
@@ -41,11 +45,27 @@ BEGIN
         v_operator_id := NEW.operator_id;
     END IF;
 
-    -- 2. Obtener datos del servicio Y DEL CLIENTE (Incluyendo teléfono)
+    -- 2. DEDUPLICACIÓN: Verificar si ya se envió una notificación para este servicio y operador en el último minuto
+    -- Esto previene disparos múltiples si el trigger se ejecuta varias veces por transacción o reintentos
+    IF EXISTS (
+        SELECT 1 FROM public.notifications 
+        WHERE metadata->>'service_id' = v_service_id::text
+        AND (
+            (user_id IS NOT NULL AND user_id = (SELECT user_id FROM public.operators WHERE id = v_operator_id))
+            OR 
+            (metadata->>'phone' = (SELECT COALESCE(o.phone, p.phone) FROM public.operators o LEFT JOIN public.profiles p ON p.id = o.user_id WHERE o.id = v_operator_id))
+        )
+        AND created_at > now() - interval '1 minute'
+        AND title = 'Nuevo Servicio Asignado'
+    ) THEN
+        RETURN NEW;
+    END IF;
+
+    -- 3. Obtener datos del servicio Y DEL CLIENTE
     SELECT 
         s.folio, 
         c.name, 
-        c.phone, -- OBTENEMOS EL TELÉFONO DEL CLIENTE
+        c.phone,
         s.origin_city, 
         s.destination_city, 
         s.scheduled_date, 
@@ -53,7 +73,7 @@ BEGIN
     INTO 
         v_service_folio, 
         v_service_client_name, 
-        v_client_phone, -- GUARDAMOS EN LA VARIABLE
+        v_client_phone,
         v_service_origin, 
         v_service_destination, 
         v_service_date, 
@@ -62,36 +82,36 @@ BEGIN
     LEFT JOIN public.clients c ON s.client_id = c.id
     WHERE s.id = v_service_id;
 
-    -- 3. Obtener datos del operador (Teléfono para enviar WhatsApp)
+    -- 4. Obtener datos del operador
     SELECT COALESCE(o.phone, p.phone), p.full_name, o.user_id
     INTO v_operator_phone, v_operator_name, v_auth_user_id
     FROM public.operators o
     LEFT JOIN public.profiles p ON p.id = o.user_id
     WHERE o.id = v_operator_id;
 
-    -- 4. Definir canal (Si tiene teléfono -> WhatsApp)
+    -- 5. Definir canal (Si tiene teléfono -> WhatsApp)
     IF v_operator_phone IS NOT NULL AND length(v_operator_phone) > 8 THEN
         v_channel := 'whatsapp';
     END IF;
 
-    -- 5. CONSTRUIR EL MENSAJE CON TODOS LOS DATOS
+    -- 6. CONSTRUIR EL MENSAJE
     v_message := format(
         '🆕 *NUEVA ASIGNACIÓN DE SERVICIO*' || chr(10) || chr(10) ||
         '📄 *Folio:* %s' || chr(10) ||
         '👤 *Cliente:* %s' || chr(10) ||
-        '📞 *Tel. Cliente:* %s' || chr(10) || -- NUEVA LÍNEA CON TELÉFONO
+        '📞 *Tel. Cliente:* %s' || chr(10) ||
         '🚛 *Ruta:* %s ➡️ %s' || chr(10) ||
         '📅 *Fecha:* %s' || chr(10) || chr(10) ||
         'Por favor, ingresa a la App para ver más detalles y confirmar.',
         COALESCE(v_service_folio, 'S/N'),
         COALESCE(v_service_client_name, 'Cliente General'),
-        COALESCE(v_client_phone, 'No registrado'), -- VALOR POR DEFECTO SI ES NULL
+        COALESCE(v_client_phone, 'No registrado'),
         COALESCE(v_service_origin, 'Origen'),
         COALESCE(v_service_destination, 'Destino'),
         COALESCE(to_char(v_service_date, 'DD/MM/YYYY HH24:MI'), 'Por definir')
     );
 
-    -- 6. Insertar notificación en la base de datos
+    -- 7. Insertar notificación
     IF v_auth_user_id IS NOT NULL OR v_channel = 'whatsapp' THEN
         INSERT INTO public.notifications (
             tenant_id, user_id, title, message, type, channel, status, metadata
@@ -114,10 +134,3 @@ BEGIN
     RETURN NEW;
 END;
 $$;
-
--- 2. Asegurar que el Trigger esté conectado correctamente (Por si acaso)
-DROP TRIGGER IF EXISTS trigger_notify_service_assignment_update ON public.services;
-CREATE TRIGGER trigger_notify_service_assignment_update
-    AFTER INSERT OR UPDATE OF operator_id ON public.services
-    FOR EACH ROW
-    EXECUTE FUNCTION public.handle_new_service_assignment();
