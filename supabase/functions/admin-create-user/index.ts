@@ -28,29 +28,11 @@ serve(async (req) => {
       throw new Error('No autorizado');
     }
 
-    // Verify caller is admin or super_admin
-    // We need to check public.user_roles or public.profiles or verify via RPC
+    // Verify caller is super_admin
     const { data: isSuperAdmin } = await supabase.rpc('is_super_admin', { user_id: caller.id });
     
-    // Also check for regular admin role if not super admin
-    let isAdmin = false;
-    let callerTenantId: string | null = null;
-
     if (!isSuperAdmin) {
-      const { data: roles } = await supabase
-        .from('user_roles')
-        .select('role, tenant_id')
-        .eq('user_id', caller.id)
-        .eq('role', 'admin');
-      
-      if (roles && roles.length > 0) {
-        isAdmin = true;
-        callerTenantId = roles[0].tenant_id;
-      }
-    }
-
-    if (!isSuperAdmin && !isAdmin) {
-      throw new Error('No tienes permisos de administrador');
+      throw new Error('Solo los super administradores pueden crear usuarios manualmente');
     }
 
     const { email, fullName, role, tenantId: requestedTenantId, mustChangePassword } = await req.json();
@@ -60,10 +42,10 @@ serve(async (req) => {
     }
 
     // Determine target tenant
-    const targetTenantId = isSuperAdmin ? requestedTenantId : callerTenantId;
+    const targetTenantId = requestedTenantId;
 
-    if (!targetTenantId && !isSuperAdmin) {
-      throw new Error('No se pudo determinar la empresa del usuario');
+    if (!targetTenantId) {
+      throw new Error('No se pudo determinar la empresa del usuario. Se requiere tenantId.');
     }
 
     // Generate temporary password

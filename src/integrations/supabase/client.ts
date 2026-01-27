@@ -5,12 +5,46 @@ import type { Database } from './types';
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
 const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
+// Custom storage adapter to support isolated sessions
+// This allows logging in with different accounts in different tabs by using ?isolated=true
+const storageAdapter = {
+  getItem: (key: string) => {
+    // Check for isolation flag in URL (first load) or sessionStorage (subsequent loads)
+    if (typeof window !== 'undefined') {
+      const urlParams = new URLSearchParams(window.location.search);
+      if (urlParams.get('isolated') === 'true') {
+        sessionStorage.setItem('supabase-isolation', 'true');
+      }
+      
+      if (sessionStorage.getItem('supabase-isolation') === 'true') {
+        return sessionStorage.getItem(key);
+      }
+      return localStorage.getItem(key);
+    }
+    return null;
+  },
+  setItem: (key: string, value: string) => {
+    if (typeof window !== 'undefined' && sessionStorage.getItem('supabase-isolation') === 'true') {
+      sessionStorage.setItem(key, value);
+      return;
+    }
+    localStorage.setItem(key, value);
+  },
+  removeItem: (key: string) => {
+    if (typeof window !== 'undefined' && sessionStorage.getItem('supabase-isolation') === 'true') {
+      sessionStorage.removeItem(key);
+      return;
+    }
+    localStorage.removeItem(key);
+  },
+};
+
 // Import the supabase client like this:
 // import { supabase } from "@/integrations/supabase/client";
 
 export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_ANON_KEY, {
   auth: {
-    storage: localStorage,
+    storage: storageAdapter,
     persistSession: true,
     autoRefreshToken: true,
   }

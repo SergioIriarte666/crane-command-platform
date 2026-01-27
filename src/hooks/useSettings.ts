@@ -32,15 +32,22 @@ export function useTenant() {
 
 export function useUpdateTenant() {
   const queryClient = useQueryClient();
-  const { authUser } = useAuth();
+  const { authUser, isSuperAdmin } = useAuth();
   
   return useMutation({
     mutationFn: async (data: TablesUpdate<'tenants'>) => {
       if (!authUser?.tenant?.id) throw new Error('No tenant');
       
+      // Filter out sensitive fields for non-super admins
+      let updateData = { ...data };
+      if (!isSuperAdmin()) {
+        const { plan, max_users, max_cranes, is_active, ...safeData } = updateData;
+        updateData = safeData;
+      }
+
       const { error } = await supabase
         .from('tenants')
-        .update(data)
+        .update(updateData)
         .eq('id', authUser.tenant.id);
       
       if (error) throw error;
@@ -188,8 +195,8 @@ export function useAdminCreateUser() {
 
   return useMutation({
     mutationFn: async ({ email, fullName, role, tenantId, mustChangePassword }: { email: string; fullName: string; role: string; tenantId?: string; mustChangePassword?: boolean }) => {
-      // If regular admin, ensure tenantId is their own
-      if (!isSuperAdmin() && !tenantId) {
+      // Ensure tenantId is provided, defaulting to current context
+      if (!tenantId) {
         tenantId = authUser?.tenant?.id;
       }
 

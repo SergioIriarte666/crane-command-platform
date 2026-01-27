@@ -7,6 +7,7 @@ export interface AuthResult {
   };
   tenantId: string;
   isAdmin: boolean;
+  isSuperAdmin: boolean;
 }
 
 export class AuthValidator {
@@ -18,7 +19,9 @@ export class AuthValidator {
     }
 
     // Verify user is authenticated
-    const { data: { user }, error: authError } = await this.supabase.auth.getUser();
+    const { data: { user }, error: authError } = await this.supabase.auth.getUser(
+      authHeader.replace('Bearer ', '')
+    );
     if (authError || !user) {
       throw new Error('Usuario no autenticado');
     }
@@ -45,13 +48,16 @@ export class AuthValidator {
       throw new Error('Solo los administradores pueden generar respaldos');
     }
 
+    const isSuperAdmin = roleData.some(r => r.role === 'super_admin');
+
     return {
       user: {
         id: user.id,
         email: user.email || ''
       },
       tenantId: profile.tenant_id,
-      isAdmin: true
+      isAdmin: true,
+      isSuperAdmin
     };
   }
 }

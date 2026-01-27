@@ -39,6 +39,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Checkbox } from '@/components/ui/checkbox';
 import { useTenantUsers, useUpdateUserRole, useToggleUserStatus, useResetPassword, useAdminCreateUser, roleDescriptions } from '@/hooks/useSettings';
+import { useAuth } from '@/contexts/AuthContext';
 import { usePendingInvitations, useCreateInvitation, useDeleteInvitation, useResendInvitation } from '@/hooks/useInvitations';
 import { usePlanLimits } from '@/hooks/usePlanLimits';
 import { Loader2, Search, UserPlus, Users, Phone, Clock, Trash2, RefreshCw, Copy, Check, Link2, MoreVertical, Key, UserCheck, ChevronDown, ChevronRight } from 'lucide-react';
@@ -51,6 +52,7 @@ import type { AppRole } from '@/types/auth';
 
 export function UsersSettings() {
   const { data: users, isLoading } = useTenantUsers();
+  const { isSuperAdmin } = useAuth();
   const { canCreateUser } = usePlanLimits();
   const { data: pendingInvitations, isLoading: invitationsLoading } = usePendingInvitations();
   const updateRole = useUpdateUserRole();
@@ -236,83 +238,85 @@ export function UsersSettings() {
             </div>
             {canCreateUser ? (
               <div className="flex gap-2">
-                <Dialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>
-                  <DialogTrigger asChild>
-                    <Button variant="outline">
-                      <UserCheck className="h-4 w-4 mr-2" />
-                      Crear Manualmente
-                    </Button>
-                  </DialogTrigger>
-                  <DialogContent>
-                    <DialogHeader>
-                      <DialogTitle>Crear Nuevo Usuario</DialogTitle>
-                      <DialogDescription>
-                        Crea un usuario directamente y obtén una contraseña temporal.
-                      </DialogDescription>
-                    </DialogHeader>
-                    <div className="space-y-4 py-4">
-                      <div className="space-y-2">
-                        <Label htmlFor="create-fullname">Nombre Completo</Label>
-                        <Input
-                          id="create-fullname"
-                          placeholder="Juan Pérez"
-                          value={createFullName}
-                          onChange={(e) => setCreateFullName(e.target.value)}
-                        />
+                {isSuperAdmin() && (
+                  <Dialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>
+                    <DialogTrigger asChild>
+                      <Button variant="outline">
+                        <UserCheck className="h-4 w-4 mr-2" />
+                        Crear Manualmente
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent>
+                      <DialogHeader>
+                        <DialogTitle>Crear Nuevo Usuario</DialogTitle>
+                        <DialogDescription>
+                          Crea un usuario directamente y obtén una contraseña temporal.
+                        </DialogDescription>
+                      </DialogHeader>
+                      <div className="space-y-4 py-4">
+                        <div className="space-y-2">
+                          <Label htmlFor="create-fullname">Nombre Completo</Label>
+                          <Input
+                            id="create-fullname"
+                            placeholder="Juan Pérez"
+                            value={createFullName}
+                            onChange={(e) => setCreateFullName(e.target.value)}
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="create-email">Email</Label>
+                          <Input
+                            id="create-email"
+                            type="email"
+                            placeholder="usuario@ejemplo.com"
+                            value={createEmail}
+                            onChange={(e) => setCreateEmail(e.target.value)}
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="create-role">Rol</Label>
+                          <Select value={createRole} onValueChange={(v) => setCreateRole(v as AppRole)}>
+                            <SelectTrigger>
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="admin">Administrador</SelectItem>
+                              <SelectItem value="dispatcher">Despachador</SelectItem>
+                              <SelectItem value="operator">Operador</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div className="flex items-center space-x-2 pt-2">
+                          <Checkbox 
+                            id="must-change-password" 
+                            checked={createMustChangePassword}
+                            onCheckedChange={(checked) => setCreateMustChangePassword(checked as boolean)}
+                          />
+                          <Label 
+                            htmlFor="must-change-password" 
+                            className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                          >
+                            Obligar cambio de contraseña en primer inicio
+                          </Label>
+                        </div>
                       </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="create-email">Email</Label>
-                        <Input
-                          id="create-email"
-                          type="email"
-                          placeholder="usuario@ejemplo.com"
-                          value={createEmail}
-                          onChange={(e) => setCreateEmail(e.target.value)}
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="create-role">Rol</Label>
-                        <Select value={createRole} onValueChange={(v) => setCreateRole(v as AppRole)}>
-                          <SelectTrigger>
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="admin">Administrador</SelectItem>
-                            <SelectItem value="dispatcher">Despachador</SelectItem>
-                            <SelectItem value="operator">Operador</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                      <div className="flex items-center space-x-2 pt-2">
-                        <Checkbox 
-                          id="must-change-password" 
-                          checked={createMustChangePassword}
-                          onCheckedChange={(checked) => setCreateMustChangePassword(checked as boolean)}
-                        />
-                        <Label 
-                          htmlFor="must-change-password" 
-                          className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                      <DialogFooter>
+                        <Button variant="outline" onClick={() => setCreateDialogOpen(false)}>
+                          Cancelar
+                        </Button>
+                        <Button 
+                          onClick={handleCreateUser}
+                          disabled={adminCreateUser.isPending}
                         >
-                          Obligar cambio de contraseña en primer inicio
-                        </Label>
-                      </div>
-                    </div>
-                    <DialogFooter>
-                      <Button variant="outline" onClick={() => setCreateDialogOpen(false)}>
-                        Cancelar
-                      </Button>
-                      <Button 
-                        onClick={handleCreateUser}
-                        disabled={adminCreateUser.isPending}
-                      >
-                        {adminCreateUser.isPending && (
-                          <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                        )}
-                        Crear Usuario
-                      </Button>
-                    </DialogFooter>
-                  </DialogContent>
-                </Dialog>
+                          {adminCreateUser.isPending && (
+                            <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                          )}
+                          Crear Usuario
+                        </Button>
+                      </DialogFooter>
+                    </DialogContent>
+                  </Dialog>
+                )}
 
                 <Dialog open={inviteDialogOpen} onOpenChange={setInviteDialogOpen}>
                   <DialogTrigger asChild>

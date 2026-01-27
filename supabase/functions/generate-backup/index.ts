@@ -28,7 +28,7 @@ serve(async (req) => {
 
     // Validate authentication
     const authValidator = new AuthValidator(supabase);
-    const { user, tenantId } = await authValidator.validateRequest(
+    const { user, tenantId, isSuperAdmin } = await authValidator.validateRequest(
       req.headers.get('Authorization')
     );
 
@@ -36,6 +36,11 @@ serve(async (req) => {
     const body = await req.json().catch(() => ({}));
     const type = body.type || 'full';
     const format = body.format || 'json';
+
+    // Restrict SQL dumps to super_admin
+    if (format === 'sql' && !isSuperAdmin) {
+      throw new Error('Solo los super administradores pueden generar respaldos SQL');
+    }
 
     console.log(`Generating ${type} backup in ${format} format for user ${user.email}`);
 
