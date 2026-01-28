@@ -106,30 +106,42 @@ export function UserManual() {
       const doc = new jsPDF({ unit: 'pt', format: 'a4' });
       const companyInfo = mapTenantToCompanyInfo(tenant);
       let y = await addCompanyHeader(doc, 'Manual de Usuario', companyInfo);
+      const pageWidth = doc.internal.pageSize.getWidth();
+      doc.setFont('helvetica', 'normal');
+      doc.setTextColor(40, 40, 40);
       doc.setFontSize(12);
-      sections.forEach((sec, index) => {
+      for (let index = 0; index < sections.length; index++) {
+        const sec = sections[index];
         if (y > 760) {
           doc.addPage();
           y = await addCompanyHeader(doc, 'Manual de Usuario', companyInfo);
         }
-        doc.setFontSize(14);
+        doc.setFont('helvetica', 'bold');
+        doc.setTextColor(52, 73, 94);
+        doc.setFontSize(13);
         doc.text(`${index + 1}. ${sec.title}`, 40, y);
-        y += 22;
+        y += 18;
+        doc.setDrawColor(220, 220, 220);
+        doc.line(40, y, pageWidth - 40, y);
+        y += 10;
+        doc.setFont('helvetica', 'normal');
+        doc.setTextColor(40, 40, 40);
         doc.setFontSize(11);
-        sec.content.forEach((line) => {
-          const wrapped = doc.splitTextToSize(`• ${line}`, 520);
-          wrapped.forEach((lineWrapped: string) => {
+        for (const line of sec.content) {
+          const clean = `• ${line}`.replace(/→/g, '>');
+          const wrapped = doc.splitTextToSize(clean, 500);
+          for (const lineWrapped of wrapped as string[]) {
             if (y > 780) {
               doc.addPage();
               y = await addCompanyHeader(doc, 'Manual de Usuario', companyInfo);
             }
             doc.text(lineWrapped, 60, y);
-            y += 18;
-          });
-          y += 6;
-        });
-        y += 6;
-      });
+            y += 14;
+          }
+          y += 4;
+        }
+        y += 8;
+      }
       addPageNumbers(doc, companyInfo);
       doc.save('manual_usuario.pdf');
     } finally {
