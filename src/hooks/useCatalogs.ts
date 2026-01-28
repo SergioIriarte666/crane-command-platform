@@ -44,18 +44,12 @@ export interface CatalogItemUpdate {
 export const CATALOG_TYPES = {
   // Clients
   client_type: { label: 'Tipo de Cliente', module: 'Clientes' },
-  tax_regime: { label: 'Régimen Tributario', module: 'Clientes' },
-  region: { label: 'Región', module: 'Clientes' },
   
   // Cranes
   crane_type: { label: 'Tipo de Grúa', module: 'Grúas' },
-  fuel_type: { label: 'Tipo de Combustible', module: 'Grúas' },
   
   // Operators
   license_type: { label: 'Tipo de Licencia', module: 'Operadores' },
-  blood_type: { label: 'Tipo de Sangre', module: 'Operadores' },
-  commission_type: { label: 'Tipo de Comisión', module: 'Operadores' },
-  bank: { label: 'Bancos', module: 'Operadores' },
   
   // Suppliers
   supplier_category: { label: 'Categoría de Proveedor', module: 'Proveedores' },
