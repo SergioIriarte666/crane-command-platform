@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Building2, Users, Shield, Bell, Palette, Database, Crown, CreditCard, HardDrive } from 'lucide-react';
+import { Building2, Users, Shield, Bell, Palette, Database, Crown, CreditCard, HardDrive, FileText } from 'lucide-react';
 import { CompanySettings } from '@/components/settings/CompanySettings';
 import { UsersSettings } from '@/components/settings/UsersSettings';
 import { RolesSettings } from '@/components/settings/RolesSettings';
@@ -11,6 +11,7 @@ import { TenantsSettings } from '@/components/settings/TenantsSettings';
 import { PlansConfigSettings } from '@/components/settings/PlansConfigSettings';
 import TrialConfigSettings from '@/components/settings/TrialConfigSettings';
 import { BackupManagementSection } from '@/components/settings/BackupManagementSection';
+import { UserManual } from '@/components/settings/UserManual';
 import { useAuth } from '@/contexts/AuthContext';
 
 export default function SettingsPage() {
@@ -24,6 +25,7 @@ export default function SettingsPage() {
     { id: 'catalogs', label: 'Catálogos', icon: Database },
     { id: 'notifications', label: 'Notificaciones', icon: Bell },
     { id: 'appearance', label: 'Apariencia', icon: Palette },
+    { id: 'manual', label: 'Manual', icon: FileText },
   ];
 
   // Solo admins pueden ver respaldos
@@ -84,6 +86,10 @@ export default function SettingsPage() {
 
         <TabsContent value="appearance">
           <AppearanceSettings />
+        </TabsContent>
+        
+        <TabsContent value="manual">
+          <UserManual />
         </TabsContent>
 
         {isAdmin() && (
