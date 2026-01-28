@@ -33,12 +33,6 @@ export const CRANE_STATUS_CONFIG: Record<CraneStatus, { label: string; color: st
   out_of_service: { label: 'Fuera de Servicio', color: 'text-red-700', bgColor: 'bg-red-100' },
 };
 
-// Tipos de combustible
-export const FUEL_TYPES = [
-  { value: 'diesel', label: 'Diésel' },
-  { value: 'gasolina', label: 'Gasolina' },
-  { value: 'gas', label: 'Gas LP' },
-] as const;
 
 // Función para calcular días hasta vencimiento
 export function getDaysUntilExpiry(date: string | null): number | null {

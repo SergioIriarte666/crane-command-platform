@@ -65,10 +65,11 @@ export const CATALOG_TYPES = {
   
   // Services
   service_type: { label: 'Tipo de Servicio', module: 'Servicios' },
-  vehicle_type: { label: 'Tipo de Vehículo', module: 'Servicios' },
-  vehicle_brand: { label: 'Marca de Vehículo', module: 'Servicios', isParent: true },
-  vehicle_model: { label: 'Modelo de Vehículo', module: 'Servicios', parentType: 'vehicle_brand' as const },
-  vehicle_condition: { label: 'Condición del Vehículo', module: 'Servicios' },
+  
+  // Vehicles (New Module)
+  vehicle_type: { label: 'Tipo de Vehículo', module: 'Vehículos' },
+  vehicle_brand: { label: 'Marca de Vehículo', module: 'Vehículos', isParent: true },
+  vehicle_model: { label: 'Modelo de Vehículo', module: 'Vehículos', parentType: 'vehicle_brand' as const },
   
   // Costs (unified)
   cost_category: { label: 'Categoría de Costo', module: 'Costos', isParent: true },

@@ -63,13 +63,6 @@ export const VEHICLE_TYPES: Record<VehicleType, string> = {
   other: 'Otro',
 };
 
-export const VEHICLE_CONDITIONS: Record<VehicleCondition, { label: string; description: string }> = {
-  runs: { label: 'Rueda', description: 'El vehículo puede rodar' },
-  neutral: { label: 'Neutral', description: 'Puede ponerse en neutral' },
-  blocked: { label: 'Bloqueado', description: 'Ruedas bloqueadas' },
-  accident: { label: 'Accidentado', description: 'Daño por accidente' },
-};
-
 // Orden de estados para el pipeline (fallback)
 export const STATUS_ORDER: string[] = [
   'draft', 'quoted', 'purchase_order_pending', 'with_purchase_order', 

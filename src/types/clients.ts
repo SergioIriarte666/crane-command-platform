@@ -17,7 +17,6 @@ export interface Client {
   name: string;
   trade_name: string | null;
   tax_id: string | null;
-  tax_regime: string | null;
   address: string | null;
   city: string | null;
   state: string | null;
@@ -45,7 +44,6 @@ export interface ClientFormData {
   name: string;
   trade_name: string;
   tax_id: string;
-  tax_regime: string;
   address: string;
   city: string;
   state: string;
@@ -76,39 +74,6 @@ export const CLIENT_TYPE_COLORS: Record<ClientType, string> = {
   aseguradora: 'bg-info/10 text-info',
   gobierno: 'bg-warning/10 text-warning',
 };
-
-// Regiones de Chile
-export const CHILEAN_REGIONS = [
-  'Arica y Parinacota',
-  'Tarapacá',
-  'Antofagasta',
-  'Atacama',
-  'Coquimbo',
-  'Valparaíso',
-  'Metropolitana de Santiago',
-  "O'Higgins",
-  'Maule',
-  'Ñuble',
-  'Biobío',
-  'La Araucanía',
-  'Los Ríos',
-  'Los Lagos',
-  'Aysén',
-  'Magallanes y la Antártica Chilena',
-];
-
-// Tipos de contribuyente en Chile (SII)
-export const TAX_REGIMES = [
-  { value: 'primera_categoria', label: 'Primera Categoría - Empresas' },
-  { value: 'segunda_categoria', label: 'Segunda Categoría - Trabajadores Dependientes' },
-  { value: 'regimen_propyme', label: 'Régimen Pro Pyme General (Art. 14 D N°3)' },
-  { value: 'regimen_propyme_transparente', label: 'Régimen Pro Pyme Transparente (Art. 14 D N°8)' },
-  { value: 'renta_presunta', label: 'Renta Presunta (Art. 34)' },
-  { value: 'regimen_semi_integrado', label: 'Régimen Semi Integrado (Art. 14 A)' },
-  { value: 'sin_fines_lucro', label: 'Organizaciones Sin Fines de Lucro' },
-  { value: 'persona_natural', label: 'Persona Natural con Inicio de Actividades' },
-  { value: 'exento', label: 'Exento de IVA' },
-];
 
 // Configuración de impuestos Chile
 export const TAX_CONFIG = {

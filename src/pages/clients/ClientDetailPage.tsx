@@ -28,7 +28,6 @@ import {
   ClientType,
   CLIENT_TYPE_LABELS,
   CLIENT_TYPE_COLORS,
-  TAX_REGIMES,
   formatCLP,
 } from '@/types/clients';
 
@@ -68,7 +67,7 @@ export default function ClientDetailPage() {
   }
 
   const TypeIcon = TYPE_ICONS[client.type];
-  const taxRegimeLabel = TAX_REGIMES.find((r) => r.value === client.tax_regime)?.label;
+
 
   return (
     <div className="space-y-6 animate-fade-in">
@@ -220,16 +219,6 @@ export default function ClientDetailPage() {
                         <p className="font-mono font-medium">{client.tax_id}</p>
                       </div>
                     </div>
-
-                    {taxRegimeLabel && (
-                      <div className="flex items-start gap-3">
-                        <FileText className="w-5 h-5 text-muted-foreground mt-0.5" />
-                        <div>
-                          <p className="text-sm text-muted-foreground">Régimen Fiscal</p>
-                          <p className="font-medium">{taxRegimeLabel}</p>
-                        </div>
-                      </div>
-                    )}
                   </>
                 ) : (
                   <p className="text-muted-foreground text-center py-4">

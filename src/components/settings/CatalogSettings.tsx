@@ -41,7 +41,8 @@ import {
   Search,
   Tag,
   ToggleLeft,
-  Settings2
+  Settings2,
+  Car
 } from 'lucide-react';
 import { useCatalogs, CATALOG_TYPES, CatalogItem, CatalogType } from '@/hooks/useCatalogs';
 import { BrandModelCatalog } from './BrandModelCatalog';
@@ -56,6 +57,7 @@ const MODULE_CONFIG: Record<string, { icon: React.ElementType; color: string; bg
   'Proveedores': { icon: Package, color: 'text-green-600', bgColor: 'bg-green-50 dark:bg-green-950/30' },
   'Inventario': { icon: Wrench, color: 'text-amber-600', bgColor: 'bg-amber-50 dark:bg-amber-950/30' },
   'Servicios': { icon: ClipboardList, color: 'text-cyan-600', bgColor: 'bg-cyan-50 dark:bg-cyan-950/30' },
+  'Vehículos': { icon: Car, color: 'text-slate-600', bgColor: 'bg-slate-50 dark:bg-slate-950/30' },
   'Costos': { icon: DollarSign, color: 'text-emerald-600', bgColor: 'bg-emerald-50 dark:bg-emerald-950/30' },
   'Facturación': { icon: ClipboardList, color: 'text-violet-600', bgColor: 'bg-violet-50 dark:bg-violet-950/30' },
   'Estados': { icon: Flag, color: 'text-indigo-600', bgColor: 'bg-indigo-50 dark:bg-indigo-950/30' },
@@ -296,8 +298,8 @@ export function CatalogSettings() {
             </CardContent>
           </Card>
 
-          {/* Special handling for Servicios module - BrandModelCatalog */}
-          {selectedModule === 'Servicios' && (
+          {/* Special handling for Vehículos module - BrandModelCatalog */}
+          {selectedModule === 'Vehículos' && (
             <BrandModelCatalog />
           )}
 

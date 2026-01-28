@@ -31,7 +31,7 @@ import {
   Shield,
   Send,
 } from 'lucide-react';
-import { Service, SERVICE_STATUS_CONFIG, SERVICE_TYPES, VEHICLE_CONDITIONS } from '@/types/services';
+import { Service, SERVICE_STATUS_CONFIG, SERVICE_TYPES } from '@/types/services';
 import { useEnhancedServiceDetails } from '@/hooks/useEnhancedServiceDetails';
 import { ServiceCostsSection } from './ServiceCostsSection';
 import { VehicleHistory } from './VehicleHistory';
@@ -412,12 +412,12 @@ export function ServiceDetailsModal({
                       <DetailItem icon={Car} label="Color" value={service.vehicle_color} />
                       <DetailItem icon={Car} label="Año" value={service.vehicle_year} />
                       {service.vehicle_condition && (
-                        <DetailItem 
-                          icon={Shield} 
-                          label="Condición" 
-                          value={VEHICLE_CONDITIONS[service.vehicle_condition as keyof typeof VEHICLE_CONDITIONS]?.label || service.vehicle_condition} 
-                        />
-                      )}
+                    <DetailItem 
+                      icon={Shield} 
+                      label="Condición" 
+                      value={service.vehicle_condition} 
+                    />
+                  )}
                     </div>
                   </DetailSection>
                 </TabsContent>

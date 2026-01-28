@@ -62,6 +62,7 @@ const DEFAULT_VEHICLE_TYPES = [
 export function BrandModelCatalog() {
   const { 
     catalogsByType, 
+    isLoading,
     createCatalogItem, 
     updateCatalogItem, 
     deleteCatalogItem, 

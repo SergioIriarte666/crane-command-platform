@@ -26,46 +26,26 @@ export const OPERATOR_STATUS_CONFIG: Record<OperatorStatus, { label: string; col
   suspended: { label: 'Suspendido', color: 'text-red-700', bgColor: 'bg-red-100' },
 };
 
-// Tipos de comisión
-export const COMMISSION_TYPES: Record<CommissionType, { label: string; description: string }> = {
-  percentage: { label: 'Porcentaje', description: 'Comisión basada en porcentaje del servicio' },
-  fixed: { label: 'Fijo', description: 'Monto fijo por servicio' },
-  mixed: { label: 'Mixto', description: 'Combinación de porcentaje y monto fijo' },
-};
+export interface OperatorStats {
+  totalServices: number;
+  completedServices: number;
+  averageRating: number;
+  totalEarnings: number;
+  activeIncidents: number;
+}
 
 // Tipos de licencia chilena
 export const LICENSE_TYPES = [
-  { value: 'A1', label: 'Clase A1 - Motocicletas hasta 400cc' },
-  { value: 'A2', label: 'Clase A2 - Motocicletas sin límite' },
-  { value: 'A3', label: 'Clase A3 - Motocicletas con sidecar' },
-  { value: 'A4', label: 'Clase A4 - Motos especiales' },
-  { value: 'A5', label: 'Clase A5 - Cuatriciclos' },
+  { value: 'A1', label: 'Clase A1 - Taxis' },
+  { value: 'A2', label: 'Clase A2 - Taxis, ambulancias y transporte público (10-17 asientos)' },
+  { value: 'A3', label: 'Clase A3 - Transporte escolar y público (sin límite)' },
+  { value: 'A4', label: 'Clase A4 - Transporte de carga (> 3.500 kg)' },
+  { value: 'A5', label: 'Clase A5 - Transporte de carga articulada (> 3.500 kg)' },
   { value: 'B', label: 'Clase B - Automóviles y camionetas' },
-  { value: 'C', label: 'Clase C - Camiones simples' },
-  { value: 'D', label: 'Clase D - Taxis colectivos' },
-  { value: 'E', label: 'Clase E - Transporte escolar' },
-  { value: 'F', label: 'Clase F - Maquinaria' },
-] as const;
-
-// Tipos de sangre
-export const BLOOD_TYPES = [
-  'A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'
-] as const;
-
-// Bancos chilenos
-export const CHILEAN_BANKS = [
-  'Banco de Chile',
-  'Banco Estado',
-  'Banco Santander',
-  'Banco BCI',
-  'Banco Itaú',
-  'Scotiabank',
-  'Banco BICE',
-  'Banco Security',
-  'Banco Falabella',
-  'Banco Ripley',
-  'Banco Consorcio',
-  'Banco Internacional',
+  { value: 'C', label: 'Clase C - Motocicletas' },
+  { value: 'D', label: 'Clase D - Maquinaria automotriz' },
+  { value: 'E', label: 'Clase E - Tracción animal' },
+  { value: 'F', label: 'Clase F - Vehículos fiscales' },
 ] as const;
 
 // Función para formatear el porcentaje de comisión

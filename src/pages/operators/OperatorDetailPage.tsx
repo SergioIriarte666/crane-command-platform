@@ -26,7 +26,6 @@ import {
   OPERATOR_STATUS_CONFIG, 
   getInitials, 
   formatCommission, 
-  COMMISSION_TYPES,
   OperatorWithCrane
 } from '@/types/operators';
 import { getDaysUntilExpiry, getExpiryColor } from '@/types/fleet';
@@ -264,7 +263,7 @@ export default function OperatorDetailPage() {
                   <div>
                     <p className="text-sm text-muted-foreground">Esquema de Comisión</p>
                     <p className="font-medium">
-                      {operator.commission_type ? COMMISSION_TYPES[operator.commission_type].label : 'No asignado'}
+                      {operator.commission_type || 'No asignado'}
                     </p>
                     <p className="text-sm text-muted-foreground">
                       {formatCommission(operator)}

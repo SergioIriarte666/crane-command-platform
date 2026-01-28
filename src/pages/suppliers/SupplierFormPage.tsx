@@ -25,8 +25,6 @@ import {
 } from '@/components/ui/select';
 import { useSuppliers } from '@/hooks/useSuppliers';
 import { SUPPLIER_CATEGORIES } from '@/types/suppliers';
-import { CHILEAN_REGIONS } from '@/types/clients';
-import { CHILEAN_BANKS } from '@/types/operators';
 import type { SupplierCategory } from '@/types/suppliers';
 
 const supplierSchema = z.object({
@@ -306,20 +304,9 @@ export default function SupplierFormPage() {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Región</FormLabel>
-                    <Select onValueChange={field.onChange} value={field.value || ''}>
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Seleccionar" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        {CHILEAN_REGIONS.map((region) => (
-                          <SelectItem key={region} value={region}>
-                            {region}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                    <FormControl>
+                      <Input {...field} placeholder="Región" />
+                    </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -424,20 +411,9 @@ export default function SupplierFormPage() {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Banco</FormLabel>
-                    <Select onValueChange={field.onChange} value={field.value || ''}>
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Seleccionar" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        {CHILEAN_BANKS.map((bank) => (
-                          <SelectItem key={bank} value={bank}>
-                            {bank}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                    <FormControl>
+                      <Input {...field} placeholder="Nombre del banco" />
+                    </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
