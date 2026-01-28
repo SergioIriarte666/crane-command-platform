@@ -6,8 +6,9 @@ import { Separator } from '@/components/ui/separator';
 import { FileText, Download, ListTree, CheckCircle2, AlertTriangle, BookOpen, Search, Database, Users, Truck, ClipboardList } from 'lucide-react';
 import jsPDF from 'jspdf';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
-import { addCompanyHeader, addPageNumbers, mapTenantToCompanyInfo } from '@/lib/pdfUtils';
+import { addCompanyHeader, addInvoiceHeader, addPageNumbers, mapTenantToCompanyInfo } from '@/lib/pdfUtils';
 import { useTenant } from '@/hooks/useSettings';
+import { toast } from 'sonner';
 
 export function UserManual() {
   const [exporting, setExporting] = useState(false);
@@ -103,47 +104,93 @@ export function UserManual() {
   const handleExportPDF = async () => {
     setExporting(true);
     try {
-      const doc = new jsPDF({ unit: 'pt', format: 'a4' });
+      // Use 'mm' to be consistent with pdfUtils (standard A4 is ~210mm x 297mm)
+      const doc = new jsPDF({ unit: 'mm', format: 'a4' });
       const companyInfo = mapTenantToCompanyInfo(tenant);
-      let y = await addCompanyHeader(doc, 'Manual de Usuario', companyInfo);
+      
+      // Add header (returns Y position in mm)
+      let y = await addInvoiceHeader(doc, companyInfo);
+      
       const pageWidth = doc.internal.pageSize.getWidth();
+      const pageHeight = doc.internal.pageSize.getHeight();
+      
+      const leftMargin = 20;
+      const rightMargin = 20;
+      const bulletIndent = 28;
+      const contentWidth = pageWidth - (leftMargin + rightMargin);
+      const bottomMargin = 25;
+      
+      y += 10; // Space after header
+
+      // Document Title
+      doc.setFont('helvetica', 'bold');
+      doc.setTextColor(52, 73, 94);
+      doc.setFontSize(18);
+      doc.text('Manual de Usuario', leftMargin, y);
+      y += 2;
+      
+      // Underline title
+      doc.setDrawColor(52, 73, 94);
+      doc.setLineWidth(0.5);
+      doc.line(leftMargin, y + 2, pageWidth - rightMargin, y + 2);
+      y += 15;
+
+      // Introduction text before sections
       doc.setFont('helvetica', 'normal');
-      doc.setTextColor(40, 40, 40);
-      doc.setFontSize(12);
+      doc.setTextColor(80, 80, 80);
+      doc.setFontSize(10);
+      doc.text(`Generado el: ${new Date().toLocaleDateString()}`, leftMargin, y);
+      y += 10;
+
       for (let index = 0; index < sections.length; index++) {
         const sec = sections[index];
-        if (y > 760) {
+        
+        // Check for page break before section title
+        if (y > pageHeight - bottomMargin - 20) {
           doc.addPage();
-          y = await addCompanyHeader(doc, 'Manual de Usuario', companyInfo);
+          y = await addInvoiceHeader(doc, companyInfo);
+          y += 10;
         }
+
+        // Section Title
         doc.setFont('helvetica', 'bold');
-        doc.setTextColor(52, 73, 94);
-        doc.setFontSize(13);
-        doc.text(`${index + 1}. ${sec.title}`, 40, y);
-        y += 18;
-        doc.setDrawColor(220, 220, 220);
-        doc.line(40, y, pageWidth - 40, y);
-        y += 10;
+        doc.setTextColor(41, 128, 185); // Primary blue
+        doc.setFontSize(14);
+        doc.text(`${index + 1}. ${sec.title}`, leftMargin, y);
+        y += 8;
+
+        // Section Content
         doc.setFont('helvetica', 'normal');
-        doc.setTextColor(40, 40, 40);
+        doc.setTextColor(60, 60, 60);
         doc.setFontSize(11);
+
         for (const line of sec.content) {
           const clean = `• ${line}`.replace(/→/g, '>');
-          const wrapped = doc.splitTextToSize(clean, 500);
+          const wrapped = doc.splitTextToSize(clean, contentWidth);
+          
           for (const lineWrapped of wrapped as string[]) {
-            if (y > 780) {
+            // Check for page break inside content
+            if (y > pageHeight - bottomMargin) {
               doc.addPage();
-              y = await addCompanyHeader(doc, 'Manual de Usuario', companyInfo);
+              y = await addInvoiceHeader(doc, companyInfo);
+              y += 10;
+              
+              // Reprint section title if broken? Maybe not needed, just continue.
             }
-            doc.text(lineWrapped, 60, y);
-            y += 14;
+            
+            // Indent wrapped lines that are not the bullet itself (simple approach: same indent)
+            doc.text(lineWrapped, lineWrapped.startsWith('•') ? leftMargin + 2 : bulletIndent, y);
+            y += 6; // Line height
           }
-          y += 4;
+          y += 2; // Paragraph spacing
         }
-        y += 8;
+        y += 8; // Section spacing
       }
+
       addPageNumbers(doc, companyInfo);
       doc.save('manual_usuario.pdf');
+    } catch (error) {
+      console.error('Error exporting PDF:', error);
     } finally {
       setExporting(false);
     }
