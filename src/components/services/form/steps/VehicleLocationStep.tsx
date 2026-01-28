@@ -1,7 +1,8 @@
+import { useState } from 'react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { Switch } from '@/components/ui/switch';
 import {
   Select,
   SelectContent,
@@ -12,7 +13,8 @@ import {
 import { ColoredSectionCard } from '../ColoredSectionCard';
 import { ServiceFormData } from '@/types/serviceForm';
 import { VEHICLE_TYPES } from '@/types/services';
-import { Car, MapPin, Key } from 'lucide-react';
+import { Car, MapPin, Plus } from 'lucide-react';
+import { QuickVehicleCatalogModal } from '../QuickVehicleCatalogModal';
 
 import type { Json } from '@/integrations/supabase/types';
 
@@ -48,10 +50,20 @@ export function VehicleLocationStep({
   // Find the brand ID from the name to filter models correctly
   const selectedBrandId = brands.find(b => b.name === formData.vehicleBrand)?.id;
   
+  const [isQuickCreateOpen, setIsQuickCreateOpen] = useState(false);
+
   // Filter models by selected brand if available
   const filteredModels = selectedBrandId
     ? models.filter(m => m.parent_id === selectedBrandId || !m.parent_id)
     : models;
+
+  const handleQuickCreateSuccess = (brandId: string, modelId: string, typeCode: string, brandName: string, modelName: string) => {
+    onChange({
+      vehicleBrand: brandName,
+      vehicleModel: modelName,
+      vehicleType: typeCode as any
+    });
+  };
 
   // Handle model selection with auto-complete for vehicle type
   const handleModelChange = (modelId: string) => {
@@ -66,9 +78,16 @@ export function VehicleLocationStep({
       
       // Auto-complete vehicle type from model metadata if available
       const metadata = selectedModel.metadata as { default_vehicle_type?: string } | null;
+      
       if (metadata?.default_vehicle_type) {
-        // The metadata stores the vehicle type ID, we need to find the code
-        const vehicleTypeItem = vehicleTypes.find(vt => vt.id === metadata.default_vehicle_type);
+        // Try to find by ID first
+        let vehicleTypeItem = vehicleTypes.find(vt => vt.id === metadata.default_vehicle_type);
+        
+        // If not found by ID, try to find by code (fallback)
+        if (!vehicleTypeItem) {
+          vehicleTypeItem = vehicleTypes.find(vt => vt.code === metadata.default_vehicle_type);
+        }
+
         if (vehicleTypeItem?.code) {
           updates.vehicleType = vehicleTypeItem.code as ServiceFormData['vehicleType'];
         }
@@ -88,7 +107,7 @@ export function VehicleLocationStep({
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label>Marca</Label>
-              {brands.length > 0 ? (
+              <div className="flex gap-2">
                 <Select
                   value={brands.find(b => b.name === formData.vehicleBrand)?.id || 'none'}
                   onValueChange={(v) => {
@@ -99,7 +118,7 @@ export function VehicleLocationStep({
                     });
                   }}
                 >
-                  <SelectTrigger className={isFieldInvalid('vehicleBrand') ? 'border-red-500' : ''}>
+                  <SelectTrigger className={isFieldInvalid('vehicleBrand') ? 'border-red-500 flex-1' : 'flex-1'}>
                     <SelectValue placeholder="Seleccionar marca" />
                   </SelectTrigger>
                   <SelectContent>
@@ -111,14 +130,16 @@ export function VehicleLocationStep({
                     ))}
                   </SelectContent>
                 </Select>
-              ) : (
-                <Input
-                  value={formData.vehicleBrand}
-                  onChange={(e) => onChange({ vehicleBrand: e.target.value })}
-                  placeholder="Ej: Toyota"
-                  className={isFieldInvalid('vehicleBrand') ? 'border-red-500' : ''}
-                />
-              )}
+                <Button 
+                  variant="outline" 
+                  size="icon" 
+                  onClick={() => setIsQuickCreateOpen(true)}
+                  type="button"
+                  title="Crear nueva marca/modelo"
+                >
+                  <Plus className="h-4 w-4" />
+                </Button>
+              </div>
               {getFieldError('vehicleBrand') && (
                 <p className="text-xs text-red-500">{getFieldError('vehicleBrand')?.message}</p>
               )}
@@ -169,63 +190,31 @@ export function VehicleLocationStep({
             )}
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label>Tipo de Vehículo</Label>
-              <Select
-                value={formData.vehicleType}
-                onValueChange={(v) => onChange({ vehicleType: v as any })}
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {Object.entries(VEHICLE_TYPES).map(([key, label]) => (
+          <div className="space-y-2">
+            <Label>Tipo de Vehículo</Label>
+            <Select
+              value={formData.vehicleType}
+              onValueChange={(v) => onChange({ vehicleType: v as any })}
+            >
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {vehicleTypes.length > 0 ? (
+                  vehicleTypes.map((type) => (
+                    <SelectItem key={type.id} value={type.code || type.id}>
+                      {type.name}
+                    </SelectItem>
+                  ))
+                ) : (
+                  Object.entries(VEHICLE_TYPES).map(([key, label]) => (
                     <SelectItem key={key} value={key}>
                       {label}
                     </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-2">
-              <Label>Condición</Label>
-              <Select
-                value={formData.vehicleCondition}
-                onValueChange={(v) => onChange({ vehicleCondition: v as any })}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Seleccionar condición" />
-                </SelectTrigger>
-                <SelectContent>
-                  {vehicleConditions.length > 0 ? (
-                    vehicleConditions.map((condition) => (
-                      <SelectItem key={condition.id} value={condition.code || condition.id}>
-                        {condition.name}
-                      </SelectItem>
-                    ))
-                  ) : (
-                    <>
-                      <SelectItem value="runs">Funciona</SelectItem>
-                      <SelectItem value="not_runs">No funciona</SelectItem>
-                      <SelectItem value="accident">Accidentado</SelectItem>
-                    </>
-                  )}
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-3 p-3 bg-muted/50 rounded-lg">
-            <Key className="w-4 h-4 text-muted-foreground" />
-            <Label htmlFor="vehicleKeys" className="flex-1 cursor-pointer">
-              ¿El vehículo tiene llaves?
-            </Label>
-            <Switch
-              id="vehicleKeys"
-              checked={formData.vehicleKeys}
-              onCheckedChange={(checked) => onChange({ vehicleKeys: checked })}
-            />
+                  ))
+                )}
+              </SelectContent>
+            </Select>
           </div>
 
           <div className="space-y-2">
@@ -258,16 +247,6 @@ export function VehicleLocationStep({
             {getFieldError('originAddress') && (
               <p className="text-xs text-red-500">{getFieldError('originAddress')?.message}</p>
             )}
-            <Input
-              value={formData.originCity || ''}
-              onChange={(e) => onChange({ originCity: e.target.value })}
-              placeholder="Ciudad"
-            />
-            <Input
-              value={formData.originReferences || ''}
-              onChange={(e) => onChange({ originReferences: e.target.value })}
-              placeholder="Referencias (ej: frente a estación de servicio)"
-            />
           </div>
 
           {/* Destino */}
@@ -285,19 +264,16 @@ export function VehicleLocationStep({
             {getFieldError('destinationAddress') && (
               <p className="text-xs text-red-500">{getFieldError('destinationAddress')?.message}</p>
             )}
-            <Input
-              value={formData.destinationCity || ''}
-              onChange={(e) => onChange({ destinationCity: e.target.value })}
-              placeholder="Ciudad"
-            />
-            <Input
-              value={formData.destinationReferences || ''}
-              onChange={(e) => onChange({ destinationReferences: e.target.value })}
-              placeholder="Referencias"
-            />
           </div>
         </div>
       </ColoredSectionCard>
+
+      <QuickVehicleCatalogModal
+        isOpen={isQuickCreateOpen}
+        onOpenChange={setIsQuickCreateOpen}
+        onSuccess={handleQuickCreateSuccess}
+        initialBrandId={brands.find(b => b.name === formData.vehicleBrand)?.id}
+      />
     </div>
   );
 }

@@ -50,6 +50,7 @@ export interface ServiceFormData {
   requestDate: string;
   serviceDate: string;
   clientId: string;
+  clientContactName?: string;
   purchaseOrder?: string;
   quoteNumber?: string;
   serviceType: string;
@@ -109,6 +110,7 @@ export const getDefaultServiceFormData = (): ServiceFormData => ({
   requestDate: new Date().toISOString().split('T')[0],
   serviceDate: new Date().toISOString().split('T')[0],
   clientId: '',
+  clientContactName: '',
   serviceType: '',
   priority: 'normal',
   

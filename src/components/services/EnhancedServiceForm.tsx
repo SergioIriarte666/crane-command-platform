@@ -109,6 +109,7 @@ export function EnhancedServiceForm({ isOpen, onOpenChange, editingService, dupl
           serviceDate: editingService.service_date || editingService.scheduled_date || new Date().toISOString().split('T')[0],
           // Client
           clientId: editingService.client_id || '',
+          clientContactName: editingService.client_contact_name || '',
           purchaseOrder: editingService.po_number || '',
           quoteNumber: editingService.quote_number || '',
           // Service type
@@ -157,6 +158,7 @@ export function EnhancedServiceForm({ isOpen, onOpenChange, editingService, dupl
           serviceDate: today,
           // Preserve client
           clientId: duplicatingService.client_id || '',
+          clientContactName: duplicatingService.client_contact_name || '',
           // Preserve service type and priority
           serviceType: duplicatingService.type,
           priority: duplicatingService.priority || 'normal',
@@ -209,6 +211,7 @@ export function EnhancedServiceForm({ isOpen, onOpenChange, editingService, dupl
         priority: formData.priority,
         status: formData.status,
         client_id: formData.clientId || null,
+        client_contact_name: formData.clientContactName || null,
         // Dates
         request_date: formData.requestDate || null,
         service_date: formData.serviceDate || null,

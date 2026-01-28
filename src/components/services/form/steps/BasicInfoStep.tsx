@@ -136,6 +136,16 @@ export function BasicInfoStep({
             )}
           </div>
 
+          <div className="space-y-2">
+            <Label htmlFor="clientContactName">Persona de Contacto (Opcional)</Label>
+            <Input
+              id="clientContactName"
+              value={formData.clientContactName || ''}
+              onChange={(e) => onChange({ clientContactName: e.target.value })}
+              placeholder="Nombre de la persona en el lugar"
+            />
+          </div>
+
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="purchaseOrder">Orden de Compra</Label>
