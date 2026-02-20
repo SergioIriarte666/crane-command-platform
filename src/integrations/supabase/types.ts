@@ -3018,7 +3018,6 @@ export type Database = {
       closure_status:
         | "draft"
         | "review"
-        | "pending_review"
         | "client_review"
         | "approved"
         | "invoicing"
@@ -3242,7 +3241,6 @@ export const Constants = {
       closure_status: [
         "draft",
         "review",
-        "pending_review",
         "client_review",
         "approved",
         "invoicing",

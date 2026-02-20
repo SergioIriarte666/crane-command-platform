@@ -57,14 +57,14 @@ export const INVOICE_STATUS_CONFIG: Record<InvoiceStatus, { label: string; color
 };
 
 // Status configurations - Closure (Simplificado)
-export const CLOSURE_STATUS_CONFIG: Record<ClosureStatus, { label: string; color: string; bgColor: string; textColor: string; icon: string }> = {
+export const CLOSURE_STATUS_CONFIG: Record<string, { label: string; color: string; bgColor: string; textColor: string; icon: string }> = {
   draft: { label: 'Borrador', color: '#6b7280', bgColor: 'bg-gray-100', textColor: 'text-gray-700', icon: '📝' },
   review: { label: 'Por Aprobar (Legacy)', color: '#f59e0b', bgColor: 'bg-amber-100', textColor: 'text-amber-700', icon: '🔍' },
   pending_review: { label: 'Por Aprobar', color: '#f59e0b', bgColor: 'bg-amber-100', textColor: 'text-amber-700', icon: '🔍' },
   client_review: { label: 'Revisión Cliente', color: '#3b82f6', bgColor: 'bg-blue-100', textColor: 'text-blue-700', icon: '👤' },
   approved: { label: 'Aprobado', color: '#22c55e', bgColor: 'bg-green-100', textColor: 'text-green-700', icon: '✅' },
-  closed: { label: 'Cerrado', color: '#0891b2', bgColor: 'bg-cyan-100', textColor: 'text-cyan-700', icon: '🔒' }, // Deprecated in UI
-  invoicing: { label: 'Facturando', color: '#8b5cf6', bgColor: 'bg-purple-100', textColor: 'text-purple-700', icon: '📄' }, // Deprecated in UI
+  closed: { label: 'Cerrado', color: '#0891b2', bgColor: 'bg-cyan-100', textColor: 'text-cyan-700', icon: '🔒' },
+  invoicing: { label: 'Facturando', color: '#8b5cf6', bgColor: 'bg-purple-100', textColor: 'text-purple-700', icon: '📄' },
   invoiced: { label: 'Facturado', color: '#15803d', bgColor: 'bg-green-200', textColor: 'text-green-800', icon: '✔️' },
   cancelled: { label: 'Cancelado', color: '#ef4444', bgColor: 'bg-red-100', textColor: 'text-red-700', icon: '❌' },
 };
@@ -97,14 +97,14 @@ export const PAYMENT_METHODS: Record<PaymentMethod, { label: string; icon: strin
 };
 
 // Workflow transitions - Closure (Simplificado)
-export const CLOSURE_TRANSITIONS: Record<ClosureStatus, ClosureStatus[]> = {
+export const CLOSURE_TRANSITIONS: Record<string, string[]> = {
   draft: ['review', 'pending_review', 'cancelled'],
-  review: ['approved', 'draft', 'cancelled'], // Legacy
+  review: ['approved', 'draft', 'cancelled'],
   pending_review: ['approved', 'client_review', 'draft', 'cancelled'],
   client_review: ['approved', 'pending_review', 'cancelled'],
-  approved: ['invoiced', 'cancelled'], // Skip closed/invoicing
-  closed: ['invoicing', 'approved', 'cancelled'], // Legacy
-  invoicing: ['invoiced', 'closed'], // Legacy
+  approved: ['invoiced', 'cancelled'],
+  closed: ['invoicing', 'approved', 'cancelled'],
+  invoicing: ['invoiced', 'closed'],
   invoiced: [],
   cancelled: ['draft'],
 };
@@ -129,7 +129,7 @@ export function formatCurrency(amount: number): string {
   }).format(amount);
 }
 
-export function getClosureNextStatuses(status: ClosureStatus): ClosureStatus[] {
+export function getClosureNextStatuses(status: string): string[] {
   return CLOSURE_TRANSITIONS[status] || [];
 }
 

@@ -44,6 +44,7 @@ export interface ClientFormData {
   name: string;
   trade_name: string;
   tax_id: string;
+  tax_regime: string;
   address: string;
   city: string;
   state: string;

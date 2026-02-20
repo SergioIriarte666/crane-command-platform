@@ -150,7 +150,7 @@ export default function ClosuresPage() {
                         <DropdownMenuTrigger asChild><Button variant="ghost" size="icon" className="h-8 w-8"><MoreVertical className="w-4 h-4" /></Button></DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
                           {nextStatuses.map((status) => (
-                            <DropdownMenuItem key={status} onClick={() => updateStatus.mutate({ id: closure.id, status })}>
+                            <DropdownMenuItem key={status} onClick={() => updateStatus.mutate({ id: closure.id, status: status as any })}>
                               <ArrowRight className="w-4 h-4 mr-2" />
                               {CLOSURE_STATUS_CONFIG[status].label}
                             </DropdownMenuItem>

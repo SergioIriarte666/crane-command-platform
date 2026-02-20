@@ -28,14 +28,14 @@ export function NotificationsProvider({ children }: { children: React.ReactNode 
   const { toast } = useToast();
 
   const fetchNotifications = async () => {
-    if (!user || !authUser?.tenant_id) return;
+    if (!user || !authUser?.profile?.tenant_id) return;
 
     try {
       // Fetch Notifications (In-App only)
       const { data, error } = await supabase
-        .from('notifications')
+        .from('notifications' as any)
         .select('*')
-        .eq('tenant_id', authUser.tenant_id)
+        .eq('tenant_id', authUser.profile!.tenant_id!)
         .or('channel.eq.in_app,channel.is.null') // Handle existing nulls as in_app
         .order('created_at', { ascending: false });
 
@@ -84,7 +84,7 @@ export function NotificationsProvider({ children }: { children: React.ReactNode 
 
   const deleteNotification = async (id: string) => {
     try {
-      const { error } = await supabase.from('notifications').delete().eq('id', id);
+      const { error } = await supabase.from('notifications' as any).delete().eq('id', id);
       if (error) throw error;
       setNotifications(prev => prev.filter(n => n.id !== id));
     } catch (error) {
@@ -117,7 +117,7 @@ export function NotificationsProvider({ children }: { children: React.ReactNode 
   };
 
   useEffect(() => {
-    if (user && authUser?.tenant_id) {
+    if (user && authUser?.profile?.tenant_id) {
       fetchNotifications();
 
       const channel = supabase
@@ -128,7 +128,7 @@ export function NotificationsProvider({ children }: { children: React.ReactNode 
             event: '*',
             schema: 'public',
             table: 'notifications',
-            filter: `tenant_id=eq.${authUser.tenant_id}`,
+            filter: `tenant_id=eq.${authUser.profile!.tenant_id}`,
           },
           (payload) => {
             if (payload.eventType === 'INSERT') {
