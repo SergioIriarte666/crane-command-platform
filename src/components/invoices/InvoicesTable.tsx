@@ -172,8 +172,8 @@ export function InvoicesTable({
     if (success) toast.success('Exportado a Excel');
   };
 
-  const handleExportPDF = () => {
-    const success = exportInvoicesToPDF(filteredAndSortedInvoices);
+  const handleExportPDF = async () => {
+    const success = await exportInvoicesToPDF(filteredAndSortedInvoices);
     if (success) toast.success('PDF Generado');
   };
 

@@ -64,6 +64,7 @@ export const CATALOG_TYPES = {
   vehicle_type: { label: 'Tipo de Vehículo', module: 'Vehículos' },
   vehicle_brand: { label: 'Marca de Vehículo', module: 'Vehículos', isParent: true },
   vehicle_model: { label: 'Modelo de Vehículo', module: 'Vehículos', parentType: 'vehicle_brand' as const },
+  vehicle_condition: { label: 'Condición de Vehículo', module: 'Vehículos' },
   
   // Costs (unified)
   cost_category: { label: 'Categoría de Costo', module: 'Costos', isParent: true },
@@ -72,6 +73,18 @@ export const CATALOG_TYPES = {
   
   // Facturación
   payment_terms: { label: 'Condiciones de Pago', module: 'Facturación' },
+  
+  // Operadores
+  blood_type: { label: 'Tipo de Sangre', module: 'Operadores' },
+  commission_type: { label: 'Tipo de Comisión', module: 'Operadores' },
+  bank: { label: 'Banco', module: 'Operadores' },
+  
+  // Clientes extra
+  region: { label: 'Región', module: 'Clientes' },
+  tax_regime: { label: 'Régimen Fiscal', module: 'Clientes' },
+  
+  // Grúas extra
+  fuel_type: { label: 'Tipo de Combustible', module: 'Grúas' },
   
   // Estados (Dynamic Status Catalogs)
   service_status: { label: 'Estados de Servicio', module: 'Estados' },

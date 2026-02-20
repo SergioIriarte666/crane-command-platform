@@ -22,7 +22,7 @@ export function useInvoiceHistory(invoiceId: string | null) {
       if (!invoiceId) return [];
       
       const { data, error } = await supabase
-        .from('invoice_history')
+        .from('invoice_history' as any)
         .select(`
           *,
           user:profiles(full_name, email)
@@ -31,7 +31,7 @@ export function useInvoiceHistory(invoiceId: string | null) {
         .order('changed_at', { ascending: false });
 
       if (error) throw error;
-      return data as InvoiceHistory[];
+      return (data as unknown) as InvoiceHistory[];
     },
     enabled: !!invoiceId && !!authUser?.tenant?.id,
   });

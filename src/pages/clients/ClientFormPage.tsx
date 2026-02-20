@@ -88,7 +88,7 @@ export default function ClientFormPage() {
         name: existingClient.name,
         trade_name: existingClient.trade_name || '',
         tax_id: existingClient.tax_id || '',
-        tax_regime: existingClient.tax_regime || '',
+        tax_regime: (existingClient as any).tax_regime || '',
         address: existingClient.address || '',
         city: existingClient.city || '',
         state: existingClient.state || '',

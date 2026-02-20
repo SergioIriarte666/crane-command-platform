@@ -40,10 +40,13 @@ export default function ChangePassword() {
       if (updateError) throw updateError;
 
       // 2. Update profile to clear the flag
+      const { data: { user: currentUser } } = await supabase.auth.getUser();
+      if (!currentUser) throw new Error('No user found');
+      
       const { error: profileError } = await supabase
         .from('profiles')
-        .update({ must_change_password: false })
-        .eq('id', (await supabase.auth.getUser()).data.user?.id);
+        .update({ must_change_password: false } as any)
+        .eq('id', currentUser.id);
 
       if (profileError) throw profileError;
 

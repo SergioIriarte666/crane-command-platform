@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
-import { addCompanyHeader, addPageNumbers, safeDateFormat, safeCurrencyFormat, COMPANY_INFO } from './pdfUtils';
+import { addCompanyHeader, addPageNumbers, safeDateFormat, safeCurrencyFormat, FALLBACK_COMPANY_INFO as COMPANY_INFO } from './pdfUtils';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 

@@ -75,7 +75,7 @@ serve(async (req) => {
           // Create form data for the request
           const formData = new URLSearchParams()
           formData.append('To', to)
-          formData.append('From', from)
+          formData.append('From', from || '')
           formData.append('Body', notification.message)
 
           // Make direct fetch request to Twilio API

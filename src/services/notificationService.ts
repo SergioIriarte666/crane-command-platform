@@ -28,17 +28,17 @@ export const NotificationService = {
     if (!user) return null;
 
     const { data, error } = await supabase
-      .from('notification_preferences')
+      .from('notification_preferences' as any)
       .select('*')
       .eq('user_id', user.id)
       .single();
 
-    if (error && error.code !== 'PGRST116') { // PGRST116 is "Row not found"
+    if (error && error.code !== 'PGRST116') {
       console.error('Error fetching preferences:', error);
       throw error;
     }
 
-    return data;
+    return data as NotificationPreferences | null;
   },
 
   /**
@@ -49,7 +49,7 @@ export const NotificationService = {
     if (!user) throw new Error('User not authenticated');
 
     const { error } = await supabase
-      .from('notification_preferences')
+      .from('notification_preferences' as any)
       .upsert({
         user_id: user.id,
         ...preferences,
@@ -64,7 +64,7 @@ export const NotificationService = {
    */
   async markAsRead(notificationId: string): Promise<void> {
     const { error } = await supabase
-      .from('notifications')
+      .from('notifications' as any)
       .update({ read: true })
       .eq('id', notificationId);
 
@@ -79,7 +79,7 @@ export const NotificationService = {
     if (!user) return;
 
     const { error } = await supabase
-      .from('notifications')
+      .from('notifications' as any)
       .update({ read: true })
       .eq('user_id', user.id)
       .eq('read', false);
@@ -92,7 +92,7 @@ export const NotificationService = {
    */
   async getTemplates() {
     const { data, error } = await supabase
-      .from('notification_templates')
+      .from('notification_templates' as any)
       .select('*')
       .order('name');
     
